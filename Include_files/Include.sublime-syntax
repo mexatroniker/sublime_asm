@@ -1,0 +1,35 @@
+%YAML 1.2
+---
+name: Include_files
+scope: source.inc
+file_extensions: 
+  - inc
+
+
+variables:
+  register: (.EQU|.equ|#define|#DEFINE)
+  COMMENT: (@|;)
+
+contexts:
+  main:
+    
+    - match: '{{register}}(\s+)+'
+      scope: asm_register
+
+    - match: '{{COMMENT}}'
+      push: comment
+
+    - match: '\b(-)?[0-9.]+\b'
+      scope: asm_value
+
+    - match: '\b(-)?(0x)+[0-9a-fA-F]+\b'
+      scope: asm_value
+
+    - match: '\b(-)?(0b)+[01]+\b'
+      scope: asm_value
+
+
+  comment:
+    - meta_scope: asm_comment
+    - match: "\n"
+      pop: true

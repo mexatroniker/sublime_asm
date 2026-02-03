@@ -1,0 +1,46 @@
+{
+    "name": "Assembler Color",
+    "author": "@Mechatroniker",
+    "variables":
+    {
+        
+    },
+    "globals":
+    {
+        
+    },
+    "rules":
+    [
+        {
+            "name": "ASM_Command",
+            "scope": "asm_command",
+            "foreground": "#B2FF66"                        
+        },
+        {
+            "name": "ASM_Command_cond",
+            "scope": "asm_command_cond",
+            "foreground": "#00CC00"                        
+        },
+        {
+            "name": "ASM_Comment",
+            "scope": "asm_comment",
+            "foreground": "#808080"                        
+        },
+        {
+            "name": "ASM_Register",
+            "scope": "asm_register",
+            "foreground": "#FF6666"                        
+        },
+        {
+            "name": "ASM_Value",
+            "scope": "asm_value",
+            "foreground": "#99FF33"                        
+        },
+        {
+            "name": "ASM_Label",
+            "scope": "asm_label",
+            "foreground": "#9933FF"                        
+        },
+        
+    ]
+}

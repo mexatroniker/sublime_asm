@@ -1,0 +1,8 @@
+{
+	"selector": "source.Assembler_GNU",
+	"file_patterns": ["*.asm", "*.s"],
+	"working_dir": "${packages}\\Assembler_GNU\\Compiler",
+	"cmd": ["test.bat"],
+	"shell": true,
+	
+}

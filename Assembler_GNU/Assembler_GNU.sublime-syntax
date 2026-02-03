@@ -1,0 +1,232 @@
+%YAML 1.2
+---
+name: Assembler_GNU
+scope: source.asm
+file_extensions: 
+  - asm
+  - s
+
+
+variables:
+  register: ((R)+(0|1|2|3|4|5|6|7|8|9|10|11|12)+|(LR|SP|PC|IP))
+  oper: (SEL|CBZ|CBNZ|TBB|TBH|BKPT|CPSIE|CPSID|)
+  oper_cond: (CLREX|PUSH|POP|LDM|STM|LDMIA|LDMDB|LDMFD|LDMEA|STMIA|STMDB|STMFD|STMEA|ADR|WFE|WFI|DMB|DSB|ISB|MRS|MSR|NOP|SEV|SVC|CLZ|CMP|CMN|MOVT|REV|REV16|REVSH|RBIT|SADD16|SADD8|SHADD16|SHADD8|SHASX|SHSAX|SHSUB16|SHSUB8|SSUB16|SSUB8|SASX|SSAX|TST|TEQ|UADD16|UADD8|UASX|USAX|UHADD16|UHADD8|UHASX|UHSAX|UHSUB16|UHSUB8|USAD8|USADA8|USUB16|USUB8|UMULL|UMAAL|UMLAL|SMLAD|UMULL|UMLAL|SMULL|SMLAL|SDIV|UDIV|SSAT|USAT|SSAT16|USAT16|QADD|QSUB|QASX|QSAX|QDADD|QDSUB|UQASX|UQSAX|UQADD|UQSUB|PKHBT|PKHTB|SXT|UXT|SXTB|UXTB|SXTH|UXTH|SXTB16|UXTB16|SXTA|UXTA|SXTAB|UXTAB|SXTAH|UXTAH|SXTAB16|UXTAB16|BFC|BFI|SBFX|UBFX|SXT|UXT|)
+  oper_s_cond: (ADD|ADC|SUB|SBC|RSB|AND|ORR|EOR|BIC|ORN|ASR|LSL|LSR|ROR|RRX|MOV|MVN|MUL|MLA|MLS)
+  oper_xy_cond: (SMLA|SMLAW|SMLAL|SMLALD|SMLSD|SMLSLD|SMMLA|SMMLS|SMMUL|SMUAD|SMUSD|SMUL|SMULW)
+  oper_type_cond: (LDREX|STREX)
+  oper_LDR_type_T_cond: (LDR)
+  oper_STR_type_T_cond: (STR)
+  oper_branch_cond_label: (BL|B)
+  oper_branch_cond_register: (BLX|BX)
+  oper_IT: (IT)
+  cond: (EQ|NE|CS|HS|CC|LO|MI|PL|VS|VC|HI|LS|GE|LT|GT|LE|AL)*
+  s: (S)*
+  xy: (LDX|BT|TB|B|T|X|R)*
+  width: (.W|.N)*
+  type: (B|H)*
+  type_LDR: (B|H|SB|SH)*
+  T: (T)*
+  directive: (SYNTAX|THUMB|CPU|FPU|EQU|INCLUDE|INCBIN|SECTION|ALIGN|WEAK|SET|ARM|CODE16|CODE32|FORCE_THUMB|THUMB_FUNC|LTORG|ORG|syntax|thumb|cpu|fpu|equ|include|incbin|section|align|weak|set|arm|code16|code32|force_thumb|thumb_func|ltorg|org)
+  WORD: (WORD|HWORD|BYTE|SHORT|SPACE|ASCII|ASCIZ|ENDM|word|hword|byte|short|space|ascii|asciz|endm)
+  COMMENT: (@|;|#)
+
+contexts:
+  main:
+    
+    - match: '\b{{register}}\b'
+      scope: asm_register
+
+
+    - match: '[.]+{{directive}}'
+      captures:
+        1: asm_register
+      
+
+    - match: '[.]+{{WORD}}'
+      captures:
+        1: asm_register
+
+
+    - match: '[.]+(MACRO|macro)\s+(\w+)+\s?+'
+      captures:
+        1: asm_register
+        2: asm_s
+
+    - match: '[.]+(GLOBAL|global)\s+(\w+)+\s+'
+      captures:
+        1: asm_register
+        2: asm_s
+               
+
+    - match: '\b{{oper_LDR_type_T_cond}}{{type_LDR}}{{T}}{{cond}}\b'              # oper_LDR_type_T_cond
+      captures:
+        1: asm_oper
+        2: asm_s
+        3: asm_value
+        4: asm_oper_cond
+      
+
+    - match: '\b{{oper_STR_type_T_cond}}{{type}}{{T}}{{cond}}\b'                  # oper_STR_type_T_cond
+      captures:
+        1: asm_oper
+        2: asm_s
+        3: asm_value
+        4: asm_oper_cond
+      
+
+    - match: '\b{{oper_branch_cond_label}}{{cond}}\b'              # oper_branch_cond_label
+      captures:
+        1: asm_oper
+        2: asm_oper_cond
+      push: branch_label
+
+    - match: '\b{{oper_branch_cond_register}}{{cond}}\b'           # oper_branch_cond_register
+      captures:
+        1: asm_oper
+        2: asm_oper_cond
+      push: branch_register
+
+    - match: '\b{{oper_s_cond}}{{s}}{{cond}}\b'           # oper_s_cond
+      captures:
+        1: asm_oper
+        2: asm_s
+        3: asm_oper_cond
+
+    - match: '\b{{oper_cond}}{{cond}}\b'                   # oper_cond
+      captures:
+        1: asm_oper
+        2: asm_oper_cond
+
+    - match: '\b{{oper_xy_cond}}{{xy}}{{cond}}\b'         # oper_xy_cond
+      captures:
+        1: asm_oper
+        2: asm_s
+        3: asm_oper_cond
+
+    - match: '\b{{oper_type_cond}}{{type}}{{cond}}\b'     # oper_type_cond
+      captures:
+        1: asm_oper
+        2: asm_s
+        3: asm_oper_cond
+
+    - match: '(\s|^)(>>|<<)\s+'
+      scope: asm_register
+            
+    - match: '\b{{oper}}\b'                                # oper
+      scope: asm_oper
+                      
+    - match: '\b(-)?[0-9]+\b'
+      scope: asm_value
+
+    - match: '\b(-)?(0x)+[0-9a-fA-F]+\b'
+      scope: asm_value
+
+    - match: '\b(-)?(0b)+[01]+\b'
+      scope: asm_value
+
+    - match: '\b(\w)+(:)+\B'
+      scope: asm_label
+    
+    - match: '{{COMMENT}}'
+      push: comment
+    
+    - match: '\b{{oper_IT}}\b'
+      push: oper_IT
+
+    - match: '"'
+      push: path
+
+    - match: '(<)(\w+)(\W+|\s)*(\D+)*(\d+)*(>)'
+      captures:
+        1: asm_register
+        2: asm_register
+        3: asm_register
+        4: asm_register
+        5: asm_value
+        6: asm_register
+
+    - match: '\b(\w+)[(]+'
+      captures:
+        1: asm_macro
+
+    - match: '\=\s*([a-z_]+)+'
+      captures:
+        1: asm_label
+        
+
+  path:
+    - meta_scope: asm_quote
+    - match: '"'
+      pop: true
+
+  comment:
+    - meta_scope: asm_comment
+    - match: "\n"
+      pop: true
+
+  label:                                # тестовый
+    - meta_scope: asm_label
+      
+    - match: '\s+{{register}}\s'
+      scope: asm_register
+
+    - match: '@'
+      set:
+        comment
+      pop: true
+
+    - match: '\n'
+      pop: true
+
+    - match: '$'
+      pop: true
+  
+
+  error:
+    - match: '@'
+      set: 
+        comment
+      pop: true
+
+    - match: '$'
+      pop: true
+       
+
+  branch_label:
+    - match: '\s\b{{register}}\s'
+      pop: true
+      push: error
+
+    - match: '\s\w+\s'
+      scope: asm_label
+      pop: true
+      push: error
+
+    - match: '\s$'
+      pop: true
+      
+  branch_register:
+    - match: '\s\b{{register}}\s'
+      scope: asm_register
+      pop: true
+      push: error
+    
+    - match: '\s$'
+      pop: true
+
+  oper_IT:
+    - meta_scope: asm_oper
+    - match: '(T|E){,3}'
+      pop: true
+
+  
+
+
+    
+
+    
+      
+     
+
+   
+  

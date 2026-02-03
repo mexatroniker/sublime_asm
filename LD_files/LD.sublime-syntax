@@ -1,0 +1,47 @@
+%YAML 1.2
+---
+name: LD_files
+scope: source.ld
+file_extensions: 
+  - ld
+
+
+variables:
+  register: (MEMORY|SECTIONS|ALIGN|ORIGIN|LENGTH|RX|RWX|RW)
+  
+
+contexts:
+  main:
+    
+    - match: '{{register}}'
+      scope: asm_register
+
+    - match: '/+\*+'
+      push: comment
+               
+    - match: '\b(-)?(0x)+[0-9a-fA-F]+\b'
+      scope: asm_value
+
+    - match: '\b(-)?(0b)+[01]+\b'
+      scope: asm_value
+
+    - match: '\b[0-9.]+(K|M)*'
+      scope: asm_value
+
+    - match: '\(+\.+(\w+)+\)+'
+      scope: asm_label
+
+    - match: '>+\s?(\w+)+'
+      scope: asm_oper
+
+    - match: '\.(\w+)+'
+      scope: asm_oper
+
+    - match: '\"+(\w+)+\"+'
+      scope: asm_quote
+
+
+  comment:
+    - meta_scope: asm_comment
+    - match: '\*+/+'
+      pop: true
