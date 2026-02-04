@@ -20,14 +20,26 @@ op_1 = list(op_1)
 for i in range(len(op_1)):
 	op_1[i] = op_1[i][:3]
 op_1 = tuple(op_1)
-#####################
 
+#####################
 class CompileAndFlash(sublime_plugin.TextCommand): 		# компиляция и прошивка проекта
 	def run(self, edit):
 		global flash
 		flash = 1
-		self.view.run_command('compile_equ')
 
+		syntax = (sublime.active_window().active_view().settings().get('syntax')).split("/")[-1].split(".")[0]
+		if syntax == "Assembler_GNU":
+			self.view.run_command('compile_equ')
+		
+#####################
+class CompileOnly(sublime_plugin.TextCommand): 		# компиляция проекта
+	def run(self, edit):
+		global flash
+		flash = 0
+
+		syntax = (sublime.active_window().active_view().settings().get('syntax')).split("/")[-1].split(".")[0]
+		if syntax == "Assembler_GNU":
+			self.view.run_command('compile_equ')
 
 #####################
 class CompileEquCommand(sublime_plugin.TextCommand):  # глобальные переменные для всего проекта
