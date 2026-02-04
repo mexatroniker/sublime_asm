@@ -5,6 +5,5 @@ echo  ".    For build Assembler GNU project"          ."
 echo  ".    please use next combination ->  "Ctrl+E"  ."
 echo  "................................................"
 
-arm-none-eabi-size -help
-pause 0
+
 
