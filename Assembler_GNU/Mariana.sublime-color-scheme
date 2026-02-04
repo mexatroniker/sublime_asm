@@ -62,7 +62,7 @@
         {
             "name": "ASM_Comment",
             "scope": "asm_comment",
-            "foreground": "#FF00FF"                        
+            "foreground": "#808080"                        
         },
         {
             "name": "ASM_Quote",

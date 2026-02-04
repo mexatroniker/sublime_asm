@@ -18,6 +18,8 @@ Sublime text: >> Menu/Preferences/Browse Packages...
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not a folder called &lt;**sublime_asm-main**&gt;*
 ---
 ### Features:
+* It is allowed to use files in UTF-8 encoding
+* If you already have a project created in another editor or have indents configured in spaces, then before using it you need to run the command: **Ctrl+Shift+P** -> **Indentation: Convert to Tabs**
 * The plugin allows you to create a full-fledged project written in GNU Assembler. The plugin includes all the necessary files for compiling the project in the **.bin** and **.hex** formats, followed by flashing it into the microcontroller's flash memory using Openocd https://openocd.org/
 * By writing a project, the plugin automatically formats syntax and highlights command directives and values
 * It is possible to specify inclides files for the entire project. To use the necessary files, they must be located either in the project folder or in the **/inc** folder. You can also add files using the editor. To do this, enter the **.INCLUDE** directive, after that pressing the Space or Enter, you will be prompted to select the required file in the file system. After this, it will be automatically copied to the **/inc** folder and will be immediately available for use. The include format allows the use of not only the **.EQU** directive, but also the **#define** , which allows the use of files from other programming languages. They are available for selection with the < **Ctrl+Space** > combination

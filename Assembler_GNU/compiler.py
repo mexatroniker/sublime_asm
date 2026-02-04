@@ -317,79 +317,99 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 			
 			for i in range(len(spisok)):
 				spisok[i] = spisok[i].replace("#", "@").replace(";", "@").replace("=", "= ")
+				
+				spisok[i] = spisok[i].split("@")
+				if len(spisok[i]) > 1:
+					temp_comment = "@" + spisok[i][1].replace("\n", "")
+
+					only_comment = len(spisok[i][0])
+					if len(spisok[i][0].replace("\t", "")) == 0:
+						spisok[i][0] = ("\t" * only_comment) + temp_comment + "\n"
+						temp_comment = ""
+						
+				else:
+					temp_comment = ""
+										
+
+				spisok[i] = spisok[i][0]
 				temp = spisok[i]
 
-				if "@" not in temp and "global" not in temp and "GLOBAL" not in temp:
+				if len(temp) > 1:
+					if "@" not in temp and "global" not in temp and "GLOBAL" not in temp:
 
-					spisok[i] = spisok[i].replace("\t", "$").replace("\n", "").replace("(", "( ").replace(")", ") ").replace(">>", " >> ").replace("<<", " << ").replace("|", " | ").replace("+", " + ").replace("  ", " ")
-					spisok[i] = spisok[i].split(" ")
-					# spisok[i] -> строка в списке файла
+						spisok[i] = spisok[i].replace("\t", "$").replace("\n", "").replace("(", "( ").replace(")", ") ").replace(">>", " >> ").replace("<<", " << ").replace("|", " | ").replace("+", " + ").replace("  ", " ")
+						spisok[i] = spisok[i].split(" ")
+						# spisok[i] -> строка в списке файла
 
-					k = 0
-					oper = ""
-					len_spisok = len(spisok[i])
+						k = 0
+						oper = ""
+						len_spisok = len(spisok[i])
 
-					macros_op = spisok[i][0].replace("$", "")
-					if "(" in macros_op:
-						macros_op = macros_op.replace("(", "")
-						if macros_op not in macros:
-							error += 1
-							print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : <macros> "{macros_op}" not found...')
+						macros_op = spisok[i][0].replace("$", "")
+						if "(" in macros_op:
+							macros_op = macros_op.replace("(", "")
+							if macros_op not in macros:
+								error += 1
+								print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : <macros> "{macros_op}" not found...')
 
-					for k in range(len_spisok): 		# определяем индекс OPER -> k
-						item = spisok[i][k].replace("$", "")[0:3]
-						if item in op_1:
-							oper = item
-							break
-					
-					len_oper = len(spisok[i][k].replace("$", ""))
-					if len_oper > 3: len_oper -= 1
-
-					if oper in op_1:
-						spisok[i][k] += " " * (6 - len_oper)
+						for k in range(len_spisok): 		# определяем индекс OPER -> k
+							item = spisok[i][k].replace("$", "")[0:3]
+							if item in op_1 or "B" in item:
+								oper = item
+								break
 						
-						temp = "" 			# сохраняем первую часть строки с OPER
-						for s in range(k+1):
-							char = spisok[i][s]
-							if char == "":
-								char = "  "
-							if ":" in char:
-								char += " "
-							temp += char
+						len_oper = len(spisok[i][k].replace("$", ""))
+						if len_oper > 3: len_oper -= 1
+						
+						if oper in op_1 or "B" in oper:
 
-						temp_spisok = spisok[i][k:]
+							spisok[i][k] += " " * (6 - len_oper)
+							
+							temp = "" 			# сохраняем первую часть строки с OPER
+							for s in range(k+1):
+								char = spisok[i][s]
+								if char == "":
+									char = "  "
+								if ":" in char:
+									char += " "
+								temp += char
 
-						for n in range(1, len(temp_spisok)):
-							if spisok[i][n+k] == "":
-								spisok[i][n+k] = " "
+							temp_spisok = spisok[i][k:]
 
-							else:
-								if spisok[i][n+k][0].isalpha() and spisok[i][n+k].replace(",", "") not in register:
-									try:
-										spisok[i][n+k] = bibliothek[spisok[i][n+k]][1]
-										# простая проверка есть ли значение в библиотеке
-
-									except:									
+							for n in range(1, len(temp_spisok)):
+								if spisok[i][n+k] == "":
+									spisok[i][n+k] = " "
+								# функция замены include в строке
+								else:
+									if spisok[i][n+k][0].isalpha() and spisok[i][n+k].replace(",", "") not in register:
 										try:
-											global_label = f".GLOBAL {spisok[i][n+k]}"
-											spisok[i][n+k] = bibliothek[global_label][1]										
-										except:
+											spisok[i][n+k] = bibliothek[spisok[i][n+k]][1]
+											# простая проверка есть ли значение в библиотеке
+
+										except:									
 											try:
-												global_label = f".global {spisok[i][n+k]}"
-												spisok[i][n+k] = bibliothek[global_label][1]
+												global_label = f".GLOBAL {spisok[i][n+k]}"
+												spisok[i][n+k] = bibliothek[global_label][1]										
 											except:
-												if spisok[i][n+k] not in set_list and spisok[i][n+k] not in label_list:
-													error += 1
-													print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : "{spisok[i][n+k]}" not found...')
-													
-										
-							temp += spisok[i][n+k]
+												try:
+													global_label = f".global {spisok[i][n+k]}"
+													spisok[i][n+k] = bibliothek[global_label][1]
+												except:
+													if spisok[i][n+k] not in set_list and spisok[i][n+k] not in label_list:
+														error += 1
+														print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : "{spisok[i][n+k]}" not found...')
+														
+											
+								temp += spisok[i][n+k]
 
-						temp += "\n"
-						temp = temp.replace("$", "\t").replace(",", ", ")
+							temp += temp_comment + "\n"
+							temp = temp.replace("$", "\t").replace(",", ", ")
 						
+						if temp[0] == ".":
+							temp = temp.replace("\n","") + temp_comment + "\n"	
 
-					spisok[i] = temp
+				spisok[i] = temp
+						
 
 			####################
 			exec(f"{list_name} = {spisok}", globals())
