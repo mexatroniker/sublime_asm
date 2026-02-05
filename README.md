@@ -45,7 +45,7 @@ Sublime text: >> Menu/Preferences/Browse Packages...
 ### Support:
 * If you have any questions or wishes, you can ask them in the Telegram group:  
 &ensp;&ensp;&ensp;&ensp;<img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" width="16" height="16">&ensp;&ensp;https://t.me/sublime_asm
-* You can also find example of GNU Assembler project in my repository
+* You can also find example of GNU Assembler project in my repository https://github.com/mexatroniker/example_asm_project
 ---
 ### Respect:
 * I would like to express my respect to **Vitaly Gorbukov** for explaining the principles of GNU Assembler, as well as for creating his editor "Assembler Editor Plus". If you want to know more about this:  
