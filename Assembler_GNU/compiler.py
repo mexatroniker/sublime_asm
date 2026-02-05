@@ -4,10 +4,11 @@ import sublime_plugin
 import subprocess
 import os
 import shutil
-from .include import include
+from .include import include, import_include
 from .Assembler_GNU import op_1, register
+import time
 
-
+timer = 0
 asm_files = ("ASM", "S")
 macros = {}
 include_global = {}
@@ -46,6 +47,9 @@ class CompileEquCommand(sublime_plugin.TextCommand):  # глобальные п�
 	def run(self, edit):
 		global include
 		global include_global
+		global timer
+		timer = time.time()
+
 		include_global = {}
 
 		###################
@@ -148,6 +152,8 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 		global flash
 		global macros
 		global terminal
+		global include
+		global timer
 		terminal = sublime.active_window().create_output_panel('info_panel')
 		
 		###########
@@ -158,6 +164,50 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 		bibl_name = path[-1] 							# имя бибилиотеки
 		bibl_global = bibl_name + "_global"
 		bibl_set = bibl_name + "_set"
+		
+		################
+		if bibl_name not in include: 					# если библиотека include отстутствует
+			
+			current_view = self.view.file_name() 			# получаем адрес открытого файла
+			current_view = current_view.split("\\")
+			
+			file_name = current_view[-1]
+			
+			try:
+				file_name = file_name.split(".")[-1].upper()
+			except:
+				file_name = "None"
+
+			current_path = ""
+			if file_name in asm_files: 					# если файл имеет расширение из <asm_files>
+				current_view = current_view[:-1]
+				
+				for i in current_view:
+					current_path += i + "\\"
+			
+			path = [current_path]
+			bibl_name = current_path.split("\\")[-2]			# имя папки проекта = имя библиотеки {include}
+							
+			exec(f"{bibl_name} = {{}}", globals())			# создаем библиотеку для include
+			include[bibl_name] = eval(bibl_name)			# помещаем новую библиотеку в include
+			
+			for item in path:
+				folder_list = os.listdir(item)
+				
+				for i in folder_list:
+					if i == "inc" or i == "INC":
+						path.append(item + i) 				# если есть папка <\inc>, добавляем ее в список путей <path>
+				
+				filename = ""
+				for i in folder_list:
+					if ".inc" in i or ".INC" in i:
+						filename = i
+						path_file = item + "\\" + filename
+						
+						import_include(path_file, eval(bibl_name)) 			# импортируем <include> из файла <.inc>
+
+
+		############
 		
 		bibliothek = {**include[bibl_name], **include[bibl_global]}
 
@@ -337,7 +387,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 				if len(temp) > 1:
 					if "@" not in temp and "global" not in temp and "GLOBAL" not in temp:
 
-						spisok[i] = spisok[i].replace("\t", "$").replace("\n", "").replace("(", "( ").replace(")", ") ").replace(">>", " >> ").replace("<<", " << ").replace("|", " | ").replace("+", " + ").replace("  ", " ")
+						spisok[i] = spisok[i].replace("\t", "$").replace("\n", "").replace("(", "( ").replace(")", " ) ").replace(">>", " >> ").replace("<<", " << ").replace("|", " | ").replace("+", " + ").replace("  ", " ")
 						spisok[i] = spisok[i].split(" ")
 						# spisok[i] -> строка в списке файла
 
@@ -405,9 +455,9 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 							temp += temp_comment + "\n"
 							temp = temp.replace("$", "\t").replace(",", ", ")
 						
-						if temp[0] == ".":
-							temp = temp.replace("\n","") + temp_comment + "\n"	
-
+						#if temp[0] == ".":
+							#temp = temp.replace("\n","") + temp_comment + "\n"	
+					temp = temp.replace("\n","") + temp_comment + "\n"
 				spisok[i] = temp
 						
 
@@ -473,6 +523,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 
 			process = stderr.split("\n")[:-1]
 			if len(process) != 0:
+				
 				print_terminal(">> Compile  successfully complete...")
 				print_terminal("-------------")
 				for i in range(len(process)):
@@ -616,7 +667,8 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 				error = 1
 
 			else:
-				print_terminal(f">> Firmware file successfully created")
+				timer = int((time.time() - timer) * 1000)
+				print_terminal(f">> Firmware file successfully created : {timer} ms")
 				print_terminal(f"----------------------------------------------------------------")
 
 				text_bat = f'arm-none-eabi-size.exe -t  "{folder}tmp\\project.elf"'

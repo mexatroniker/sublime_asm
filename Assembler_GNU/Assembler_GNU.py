@@ -440,7 +440,7 @@ class NewLineCorrectCommand(sublime_plugin.TextCommand): # обработка т
 			if "*" in current_line:
 				current_line = current_line.replace("*", "* ").replace("*", " *").replace("*  ", "* ").replace("  *", " *")
 			
-			if "/" in current_line:
+			if "/" in current_line and "head" not in current_line:
 				current_line = current_line.replace("/", "/ ").replace("/", " /").replace("/  ", "/ ").replace("  /", " /")
 
 			if "-" in current_line and current_directive_line[0] != "." and "POP" not in current_line and "PUSH" not in current_line:
@@ -518,30 +518,27 @@ class NewLineCommand(sublime_plugin.TextCommand): # выравнивание с�
 			if "\t" not in current_line_cursor:
 				no_tab = 1
 			else: no_tab = 0
+							
+			shift = ""
+			
+			if macros == 1:
+				if leng_line == 0:
+					shift = "\t"
 
-			syntax = (sublime.active_window().active_view().settings().get('syntax')).split("/")[-1].split(".")[0]
-			if syntax == "Assembler_GNU":
+			elif leng_line == 0 or no_tab == 1:
+				if macros == 0:
+					shift = int(shift_1/4) * "\t"
+			
+			if bracket == 1 and leng_line == int(shift_1/4) + 1:
+				shift += (bracket_schift - 4) * " " 
+			elif bracket == 1 and leng_line == int(shift_1/4):
+				shift += (bracket_schift) * " " 
 				
-				shift = ""
+			elif bracket == 2:
+				bracket = 0
+							
 				
-				if macros == 1:
-					if leng_line == 0:
-						shift = "\t"
-
-				elif leng_line == 0 or no_tab == 1:
-					if macros == 0:
-						shift = int(shift_1/4) * "\t"
-				
-				if bracket == 1 and leng_line == int(shift_1/4) + 1:
-					shift += (bracket_schift - 4) * " " 
-				elif bracket == 1 and leng_line == int(shift_1/4):
-					shift += (bracket_schift) * " " 
-					
-				elif bracket == 2:
-					bracket = 0
-								
-					
-				self.view.insert(edit, line_start.a, text=shift)
+			self.view.insert(edit, line_start.a, text=shift)
 
 
 #####################
