@@ -2,20 +2,33 @@ import sublime
 import sublime_plugin
 import os
 
+terminal = sublime.active_window().create_output_panel('info_panel')
+terminal.assign_syntax("Assembler_GNU.sublime-syntax")
+
 include = {} 						# библиотека {include} содержит несколько словарей для каждого проекта ASM
 path_list = [] 						# пути к файлам ASM
 asm_files = ("ASM", "S")
 
+################
+def print_terminal(text): 				# Вывод текста в Output Panel
+	global terminal
+	terminal.run_command('append', {'characters': f"{text}\n"})
+	sublime.active_window().run_command('show_panel', {'panel': 'output.info_panel'})
+
+
 ##############
 def import_include(path_file, bibl_name): 		# Функция импорта include из файла с адресом <path_file>
+	global terminal
 	with open (path_file, 'r', encoding='utf-8') as file:
 		clock = 0  					# допустимое количество пустых строк в фале <include> = 10 см.ниже
 		line_nummer = 0
 		values = 0
+		file_include = path_file.split("\\")[-1]
 
 		while(1):
 			line_nummer += 1
 			stroka = file.readline()
+			stroka = stroka.replace("@", " @").replace(",", ", ").replace(" ,", ",")
 			
 			if (len(stroka)) == 0:
 				clock += 1
@@ -73,21 +86,21 @@ def import_include(path_file, bibl_name): 		# Функция импорта incl
 				
 						
 			except SyntaxError:
-				print(f">> error Syntax {stroka[2]}", line_nummer)
+				print_terminal(f'>> <{file_include}> <line {line_nummer}> - ErrorSyntax: {stroka[2]}')
 
 			except IndexError:
-				print(f">> error Index - {stroka}", line_nummer)
+				print_terminal(f'>> <{file_include}> <line {line_nummer}> - ErrorIndex: {stroka}')
 
 			except ValueError:
-				print(f">> error Value - {line_nummer}")
+				print_terminal(f'>> <{file_include}> <line {line_nummer}> - ErrorValue:')
 
 			except NameError:
-				print(f">> error Name - {stroka[2]}", line_nummer)
+				print_terminal(f'>> <{file_include}> <line {line_nummer}> - ErrorName: {stroka[2]}')
 			
 			
 
-					
-	print(f">> From <{path_file}> saved {values} values from {line_nummer-9} lines")
+	print_terminal("------------------")			
+	print_terminal(f'>> From "{path_file}" saved {values} values from {line_nummer-9} lines')
 
 ###############		
 
@@ -102,7 +115,7 @@ for view in views:
 	current_view = current_view.split("\\")
 	
 	file_name = current_view[-1]
-	
+		
 	try:
 		file_name = file_name.split(".")[-1].upper()
 	except:
@@ -118,6 +131,7 @@ for view in views:
 		if current_path not in path_list:
 			path_list.append(current_path) 				# получили список путей файлов <.asm>
 
+		
 
 ######################
 #path = os.path.abspath(__file__)

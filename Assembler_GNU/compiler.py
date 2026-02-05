@@ -154,7 +154,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 		global terminal
 		global include
 		global timer
-		terminal = sublime.active_window().create_output_panel('info_panel')
+		
 		
 		###########
 
@@ -205,10 +205,10 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 						path_file = item + "\\" + filename
 						
 						import_include(path_file, eval(bibl_name)) 			# импортируем <include> из файла <.inc>
-
+		
 
 		############
-		
+		terminal = sublime.active_window().create_output_panel('info_panel')
 		bibliothek = {**include[bibl_name], **include[bibl_global]}
 
 				
@@ -774,10 +774,6 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 
 					flash = 0
 
-
-			
-				
-		
 
 ################
 class ShowTerminalPanelCommand(sublime_plugin.TextCommand):
