@@ -1,0 +1,7 @@
+{
+	"font_size": 12,
+	"theme": "Default Dark.sublime-theme",
+	"index_files": false,
+	"color_scheme": "Mariana.sublime-color-scheme",
+	"detect_indentation": false,
+}

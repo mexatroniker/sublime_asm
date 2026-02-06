@@ -6,16 +6,22 @@ This plugin includes all the necessary tools for preparing firmware for a microc
 ---
 ### Install:
 * Run the **git clone** command into the &lt;Packages&gt; folder of your installed **Sublime text 4** editor:  
-&ensp; 1. In Sublime text: >> Menu/Preferences/Browse Packages...  
+&ensp; 1. In `Sublime: >> Menu/Preferences/Browse Packages...`  
 &ensp; 2. **Without** preliminary initialization of the folder using the <`git init`> -  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; run command <`git clone https://github.com/mexatroniker/sublime_asm.git .`>  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; run command `git clone https://github.com/mexatroniker/sublime_asm.git .`  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; *Note the &lt;**.**&gt; at the end of the command line.  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This will allow you to copy files to the necessary directory without creating a separate project folder.*  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Please also note that to execute this command, the folder must be completely empty.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; You can temporarily move the data from it to another location and then return everything back.**  
+&ensp; 3. In the installed package, find the < Assembler_GNU > folder. In it, you will find the < KeyBindings.txt > file. &ensp;&ensp;&ensp; This file contains the command that needs to be added to `Sublime: >> Menu/Preferences/Key Bindings...`  
+&ensp; 4. Also in this folder you will find another file < Preferences.txt >.  
+&ensp;&ensp;&ensp; This file contains the settings that needs to be added to `Sublime: >> Menu/Preferences/Settings...`  
+&ensp; 5. After all these steps, everything should work correctly.
  
 * You can also click the **Code** button and then **Download ZIP**. Unpacking the archive to your packages folder:  
-Sublime text: >> Menu/Preferences/Browse Packages...  
+`Sublime text: >> Menu/Preferences/Browse Packages...` and than do all the points described above...  
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Note that the* &lt;Packages&gt; *folder should contain the only project files, and  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not a folder called &lt;**sublime_asm-main**&gt;*
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not a folder called &lt;**sublime_asm-main**&gt;*  
 ---
 ### Features:
 * It is allowed to use files in UTF-8 encoding
