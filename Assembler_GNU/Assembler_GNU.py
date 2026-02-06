@@ -14,6 +14,7 @@ print(f">> Python 3.8 active!")
 
 # список переменных
 register = ('R0','R1','R2','R3','R4','R5','R6','R7','R8','R9','R10','R11','R12','LR','SP','PC','IP')
+cond = ('EQ', 'NE','CS','HS','CC','LO','MI','PL','VS','VC','HI','LS','GE','LT','GT','LE','AL')
 oper = ('SEL', 'CBZ', 'CBNZ', 'TBB', 'TBH', 'BKPT', 'CPSIE', 'CPSID')
 oper_cond = ('CLREX', 'PUSH', 'POP', 'LDM', 'STM', 'LDMIA', 'LDMDB', 'LDMFD', 'LDMEA', 'STMIA', 'STMDB', 'STMFD', 'STMEA', 'ADR', 'WFE', 'WFI', 'DMB', 'DSB', 'ISB', 'MRS', 'MSR', 'NOP', 'SEV', 'SVC', 'CLZ', 'CMP', 'CMN', 'MOVT', 'REV', 'REV16', 'REVSH', 'RBIT', 'SADD16', 'SADD8', 'SHADD16', 'SHADD8', 'SHASX', 'SHSAX', 'SHSUB16', 'SHSUB8', 'SSUB16', 'SSUB8', 'SASX', 'SSAX', 'TST', 'TEQ', 'UADD16', 'UADD8', 'UASX', 'USAX', 'UHADD16', 'UHADD8', 'UHASX', 'UHSAX', 'UHSUB16', 'UHSUB8', 'USAD8', 'USADA8', 'USUB16', 'USUB8', 'UMULL', 'UMAAL', 'UMLAL', 'SMLAD', 'UMULL', 'UMLAL', 'SMULL', 'SMLAL', 'SDIV', 'UDIV', 'SSAT', 'USAT', 'SSAT16', 'USAT16', 'QADD', 'QSUB', 'QASX', 'QSAX', 'QDADD', 'QDSUB', 'UQASX', 'UQSAX', 'UQADD', 'UQSUB', 'PKHBT', 'PKHTB', 'SXT', 'UXT', 'SXTB', 'UXTB', 'SXTH', 'UXTH', 'SXTB16', 'UXTB16', 'SXTA', 'UXTA', 'SXTAB', 'UXTAB', 'SXTAH', 'UXTAH', 'SXTAB16', 'UXTAB16', 'BFC', 'BFI', 'SBFX', 'UBFX', 'SXT', 'UXT')
 oper_s_cond = ('ADD', 'ADC', 'SUB', 'SBC', 'RSB', 'AND', 'ORR', 'EOR', 'BIC', 'ORN', 'ASR', 'LSL', 'LSR', 'ROR', 'RRX', 'MOV', 'MVN', 'MUL', 'MLA', 'MLS')
@@ -399,9 +400,9 @@ class NewLineCorrectCommand(sublime_plugin.TextCommand): # обработка т
 			bevor_word_up = bevor_word.upper()
 			
 
-			if current_word_up in register:
+			if current_word_up in register or current_word_up in cond:
 				self.view.replace(edit, word_region, text=current_word_up)
-			elif bevor_word_up in register:
+			elif bevor_word_up in register or current_word_up in cond:
 				self.view.replace(edit, bevor_word_region, text=bevor_word_up)
 
 
@@ -443,7 +444,7 @@ class NewLineCorrectCommand(sublime_plugin.TextCommand): # обработка т
 			if "/" in current_line and "head" not in current_line:
 				current_line = current_line.replace("/", "/ ").replace("/", " /").replace("/  ", "/ ").replace("  /", " /")
 
-			if "-" in current_line and current_directive_line[0] != "." and "POP" not in current_line and "PUSH" not in current_line:
+			if "-" in current_line and current_directive_line[0] != "." and "POP" not in current_line and "PUSH" not in current_line and "@" not in current_line:
 				current_line = current_line.replace("-", " - ").replace(",", ", ").replace(",  ", ", ").replace("  -  ", " - ")
 
 			if ")" in current_line_cursor and macro_check != 1:
@@ -566,13 +567,14 @@ class SpacerCommand(sublime_plugin.TextCommand):
 			bevor_word = self.view.substr(bevor_word_region) 	# предыдущее слово
 			current_line = self.view.substr(line_start) 		# содержимое всей строки
 			current_line_up = current_line.upper() 				# содержимое строки ЗАГЛАВНЫЕ буквы
-			current_word = current_word.upper()
 			bevor_word = bevor_word.upper()
 
-			directive_line = current_line_up.replace("\t", "") 		# если директивы в строке еще не было
-			if directive_line[0] == "." and current_word in directive:
+			directive_line = current_line.replace("\t", "") 		# если директивы в строке еще не было
+			if directive_line[0] == "." and current_word.upper() in directive:
+				directive_line = directive_line.replace(current_word, current_word.upper())
 				self.view.replace(edit, line_start, text=directive_line)
 
+			current_word = current_word.upper()
 			
 			if current_word in directive_include: 	# обработка команды <include>
 				path = self.view.file_name()
@@ -603,6 +605,10 @@ class SpacerCommand(sublime_plugin.TextCommand):
 				if word_to_start == ":":
 					if not_more_after == 1:
 						current_line = current_line.replace("\t", "").replace(" ", "") + " "
+						self.view.replace(edit, line_start, text=current_line)
+						after_label = 1
+					else:
+						current_line = current_line.replace("\t", "")
 						self.view.replace(edit, line_start, text=current_line)
 						after_label = 1
 											
@@ -645,6 +651,9 @@ class SpacerCommand(sublime_plugin.TextCommand):
 					elif bevor_word in register:
 						self.view.replace(edit, bevor_word_region, text=bevor_word)
 						position = 2
+					elif current_word in cond:
+						self.view.replace(edit, word_region, text=current_word)
+						
 					if last_oper in oper_mem and current_word in register: 	# если запись идет в адрес
 						pos = self.view.sel()[0].a
 						self.view.insert(edit, pos, text="[]")
@@ -652,10 +661,10 @@ class SpacerCommand(sublime_plugin.TextCommand):
 						self.view.sel().add(pos+1)
 
 				elif position == 2:
-					if current_word in register:
+					if current_word in register or current_word in cond:
 						self.view.replace(edit, word_region, text=current_word)
 						position = 3
-					elif bevor_word in register:
+					elif bevor_word in register or bevor_word in cond:
 						self.view.replace(edit, bevor_word_region, text=bevor_word)
 						position = 2
 		

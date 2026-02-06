@@ -395,12 +395,15 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 						oper = ""
 						len_spisok = len(spisok[i])
 
-						macros_op = spisok[i][0].replace("$", "")
+						macros_op = spisok[i][0].replace("$", "") 		# обработка макроса
 						if "(" in macros_op:
 							macros_op = macros_op.replace("(", "")
+
 							if macros_op not in macros:
 								error += 1
 								print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : <macros> "{macros_op}" not found...')
+							else:
+								temp = temp.replace("(", " ").replace(")", " ")
 
 						for k in range(len_spisok): 		# определяем индекс OPER -> k
 							item = spisok[i][k].replace("$", "")[0:3]

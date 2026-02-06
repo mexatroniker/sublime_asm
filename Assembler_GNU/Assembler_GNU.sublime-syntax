@@ -130,7 +130,7 @@ contexts:
     - match: '{{COMMENT}}'
       push: comment
     
-    - match: '\b{{oper_IT}}\b'
+    - match: '\b{{oper_IT}}'
       push: oper_IT
 
     - match: '"'

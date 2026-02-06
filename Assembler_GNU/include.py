@@ -28,7 +28,7 @@ def import_include(path_file, bibl_name): 		# Функция импорта incl
 		while(1):
 			line_nummer += 1
 			stroka = file.readline()
-			stroka = stroka.replace("@", " @").replace(",", ", ").replace(" ,", ",")
+			stroka = stroka.replace("@", " @").replace(",", " ")
 			
 			if (len(stroka)) == 0:
 				clock += 1
