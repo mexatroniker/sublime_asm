@@ -3,5 +3,5 @@
 	{ "keys": ["ctrl+e"], "command": "compile_only" },
 	{ "keys": ["shift+escape"], "command": "show_terminal_panel" },
 	{ "keys": ["ctrl+shift+e"], "command": "compile_and_flash"},
-	
+	{ "keys": ["ctrl+shift+o"], "command": "debug_openocd"},
 ]
