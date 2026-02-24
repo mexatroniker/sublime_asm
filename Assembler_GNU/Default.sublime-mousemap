@@ -1,0 +1,12 @@
+[
+    {
+        "button": "button1",
+        "modifiers": ["ctrl"],
+        "press_command": "drag_select",
+        "command": "breakpoint",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.asm" },
+            
+        ]
+    }
+]

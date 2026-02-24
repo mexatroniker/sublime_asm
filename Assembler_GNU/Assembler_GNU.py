@@ -4,6 +4,7 @@ import os
 import shutil
 
 from .include import include, import_include
+from .debug import stop_openocd
 
 #path = os.path.abspath(__file__)
 #path_directory = os.path.dirname(path) + "\\include"
@@ -349,6 +350,7 @@ class EventListener(sublime_plugin.EventListener):
 			file_name = file_name.split(".")[-1].upper()
 		except:
 			file_name = "None"
+		
 
 		current_path = ""
 		if file_name in asm_files: 					# если файл имеет расширение из <asm_files>
@@ -357,27 +359,36 @@ class EventListener(sublime_plugin.EventListener):
 			for i in current_view:
 				current_path += i + "\\"
 		
-		path = [current_path]
-		bibl_name = current_path.split("\\")[-2]			# имя папки проекта = имя библиотеки {include}
-		if bibl_name not in include:
+			path = [current_path]
 			
-			exec(f"{bibl_name} = {{}}", globals())			# создаем библиотеку для include
-			include[bibl_name] = eval(bibl_name)			# помещаем новую библиотеку в include
+			bibl_name = current_path.split("\\")[-2]			# имя папки проекта = имя библиотеки {include}
 			
-			for item in path:
-				folder_list = os.listdir(item)
+			if bibl_name not in include:
 				
-				for i in folder_list:
-					if i == "inc" or i == "INC":
-						path.append(item + i) 				# если есть папка <\inc>, добавляем ее в список путей <path>
+				exec(f"{bibl_name} = {{}}", globals())			# создаем библиотеку для include
+				include[bibl_name] = eval(bibl_name)			# помещаем новую библиотеку в include
 				
-				filename = ""
-				for i in folder_list:
-					if ".inc" in i or ".INC" in i:
-						filename = i
-						path_file = item + "\\" + filename
-						
-						import_include(path_file, eval(bibl_name)) 			# импортируем <include> из файла <.inc>
+				for item in path:
+					folder_list = os.listdir(item)
+					
+					for i in folder_list:
+						if i == "inc" or i == "INC":
+							path.append(item + i) 				# если есть папка <\inc>, добавляем ее в список путей <path>
+					
+					filename = ""
+					for i in folder_list:
+						if ".inc" in i or ".INC" in i:
+							filename = i
+							path_file = item + "\\" + filename
+							
+							import_include(path_file, eval(bibl_name)) 			# импортируем <include> из файла <.inc>
+
+
+	def on_pre_close(self, view):
+		stop_openocd()
+		
+	def on_exit(self):
+		stop_openocd()
 		
 
 #####################
@@ -399,17 +410,17 @@ class NewLineCorrectCommand(sublime_plugin.TextCommand): # обработка т
 			bevor_word = self.view.substr(bevor_word_region)
 			bevor_word_up = bevor_word.upper()
 			
-
-			if current_word_up in register or current_word_up in cond:
-				self.view.replace(edit, word_region, text=current_word_up)
-			elif bevor_word_up in register or current_word_up in cond:
-				self.view.replace(edit, bevor_word_region, text=bevor_word_up)
-
-
 			line_start = self.view.line(cursor_pos) 		# координаты строки
 			current_line = self.view.substr(line_start)     # содержание строки
 			current_line_up = current_line.upper() 			# строка ЗАГЛАВНЫЕ
 			current_directive_line = current_line_up.replace("\t", "") # строка заглавная без \t
+
+			if current_word_up in register or current_word_up in cond:
+				if current_line[0:3] != ">> ":
+					self.view.replace(edit, word_region, text=current_word_up)
+					current_line = self.view.substr(line_start)     # содержание строки обновилено
+			elif bevor_word_up in register or current_word_up in cond:
+				self.view.replace(edit, bevor_word_region, text=bevor_word_up)
 
 			macro_check = current_directive_line.split(" ")[0]
 			if "(" in macro_check:
@@ -490,6 +501,18 @@ class NewLineCorrectCommand(sublime_plugin.TextCommand): # обработка т
 				macros = 0
 
 			self.view.replace(edit, line_start, text=current_line)
+
+			send_line = current_line
+			
+			if send_line[0:3] == ">> ":				
+				send_line = send_line.replace(">> ", "")
+				if send_line == "step" or send_line == "next" or send_line == "reset halt" or send_line == "resume" or send_line == "reset run":
+					sublime.active_window().run_command("openocd_send", {"command": send_line})
+				else:
+					sublime.active_window().run_command("openocd_send_read", {"command": send_line})
+
+
+
 
 	############
 	def FilePath(self, path):
@@ -600,7 +623,7 @@ class SpacerCommand(sublime_plugin.TextCommand):
 			
 
 			if bevor_clear or word_to_start == ":" or after_label == 1:
-			 	# если начало строки или после label
+				# если начало строки или после label
 				# если введен label:
 				if word_to_start == ":":
 					if not_more_after == 1:

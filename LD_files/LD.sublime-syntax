@@ -34,8 +34,10 @@ contexts:
     - match: '>+\s?(\w+)+'
       scope: asm_oper
 
-    - match: '\.(\w+)+'
-      scope: asm_oper
+    - match: '\.(\w+)(\.)*(\w+)*'
+      captures:
+        1: asm_oper
+        3: asm_label
 
     - match: '\"+(\w+)+\"+'
       scope: asm_quote

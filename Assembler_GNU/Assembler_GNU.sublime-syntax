@@ -152,7 +152,17 @@ contexts:
     - match: '\=\s*([a-z_]+)+'
       captures:
         1: asm_label
-        
+    
+    - match: '=>|:>'
+      push: debug
+
+    - match: '&'
+      push: break_point
+
+    - match: '::(\s+)+(\w+)+'
+      captures:
+        1: asm_register
+        2: asm_label
 
   path:
     - meta_scope: asm_quote
@@ -219,7 +229,15 @@ contexts:
     - match: '(T|E){,3}'
       pop: true
 
-  
+  debug:
+    - meta_scope: invalid
+    - match: "\n"
+      pop: true
+
+  break_point:
+    - meta_scope: invalid.deprecated
+    - match: "\n"
+      pop: true
 
 
     

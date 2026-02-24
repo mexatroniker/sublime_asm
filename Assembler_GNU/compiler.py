@@ -23,7 +23,7 @@ for i in range(len(op_1)):
 op_1 = tuple(op_1)
 
 #####################
-class CompileAndFlash(sublime_plugin.TextCommand): 		# компиляция и прошивка проекта
+class CompileAndFlashCommand(sublime_plugin.TextCommand): 		# компиляция и прошивка проекта
 	def run(self, edit):
 		global flash
 		flash = 1
@@ -33,7 +33,7 @@ class CompileAndFlash(sublime_plugin.TextCommand): 		# компиляция и �
 			self.view.run_command('compile_equ')
 		
 #####################
-class CompileOnly(sublime_plugin.TextCommand): 		# компиляция проекта
+class CompileOnlyCommand(sublime_plugin.TextCommand): 		# компиляция проекта
 	def run(self, edit):
 		global flash
 		flash = 0
@@ -149,6 +149,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 		after_head = 0
 		head = []
 		error = 0
+		debug_lines = {}
 		global flash
 		global macros
 		global terminal
@@ -223,11 +224,20 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 		if "bin" not in temp_file_list:					# создаем папку bin
 			os.mkdir(folder + "bin")
 
+		if "dbg" not in temp_file_list:					# создаем папку dbg
+			os.mkdir(folder + "dbg")
+
 		tmp_path = folder + "tmp"
 		folder_tmp = os.listdir(tmp_path)
 
 		for i in folder_tmp:
 			os.remove(f"{tmp_path}\\{i}") 				# очищаем папку tmp
+
+		tmp_path = folder + "dbg"
+		folder_tmp = os.listdir(tmp_path)
+
+		for i in folder_tmp:
+			os.remove(f"{tmp_path}\\{i}") 				# очищаем папку dbg
 
 
 		file_list = []
@@ -282,10 +292,11 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 							head_end += 3
 							after_head = head_end
 						elif head_flag == 3:
-							temp_list.append(["\t\n", number])
-							temp_list.append(["@ ------------\n", number])
-							temp_list.append(["@ ------------\n", number])
-							temp_list.append(["\t\n", number])
+							if "main" not in name:
+								temp_list.append(["\t\n", number])
+								temp_list.append(["@ ------------\n", number])
+								temp_list.append(["@ ------------\n", number])
+								temp_list.append(["\t\n", number])
 							head_flag = 0
 							
 						######################
@@ -365,6 +376,8 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 				spisok.append(i[0])
 				eval(current_file).append(i[1])
 			
+			debug_lines[list_name] = eval(current_file) 	# библиотека с номерами линий файла _asm
+
 			for i in range(len(spisok)):
 				spisok[i] = spisok[i].replace("#", "@").replace(";", "@").replace("=", "= ")
 				
@@ -458,8 +471,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 							temp += temp_comment + "\n"
 							temp = temp.replace("$", "\t").replace(",", ", ")
 						
-						#if temp[0] == ".":
-							#temp = temp.replace("\n","") + temp_comment + "\n"	
+							
 					temp = temp.replace("\n","") + temp_comment + "\n"
 				spisok[i] = temp
 						
@@ -511,7 +523,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 				filename = f"{folder}tmp\\{name}"
 				output_name = f"{folder}tmp\\{output_name}"
 
-				text_bat.append(f'arm-none-eabi-as.exe -o "{output_name}" "{filename}"\n\n')
+				text_bat.append(f'arm-none-eabi-as.exe -g -o "{output_name}" "{filename}"\n\n')
 
 
 			# создаем compiler.bat для компиляции проекта
@@ -631,10 +643,11 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 					#print_terminal(f"------------------------------------")
 					error = 0
 
-		################# создаем файлы .bin .hex
+		################# создаем файлы .bin .hex и dbg\project.sasm
 		if error == 0:
 			text_bat = f'arm-none-eabi-objcopy.exe -O binary "{folder}tmp\\project.elf" "{folder}bin\\project.bin" \n'
 			text_bat += f'arm-none-eabi-objcopy.exe -O ihex "{folder}tmp\\project.elf" "{folder}bin\\project.hex" \n'
+			text_bat += f'arm-none-eabi-objdump.exe -dl "{folder}tmp\\project.elf" > "{folder}dbg\\project.sasm" \n'
 
 			# создаем object.bat для линковки проекта
 			with open (path_obj_bat, 'w', encoding='utf-8') as file:
@@ -703,12 +716,41 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 				print_terminal("----------------------------------------------------------------")
 				error = 0
 				################# файл прошивки успешно создан ############
+				
+				filename = f"{folder}dbg\\lines.dbg"
+				with open(filename, 'w', encoding='utf-8') as file:
+					for key in debug_lines:
+						file.write(f"{key}:\n")
 
+						if "main" not in key:
+							shift = len(head)
+							for i in range(shift):
+								debug_lines[key].insert(0, 0)
+							shift = 0
+						else:
+							shift = 1	
+
+						for item in debug_lines[key]:
+							try:
+								file.write(f"{int(item) - shift}, ")
+							except:
+								file.write(f"{item}, ")
+
+
+						file.write("\n")
+					
+
+				####################### файл для debug создан в \dbg ########
+				
+
+
+				############### прошивка flash ##############
 				if flash == 1:
 					openocd = f"{folder}openocd.bat"
-									
+														
 					try:
-						spisok = []					
+						spisok = []
+						spisok_debug = []
 						with open(openocd, 'r', encoding='utf-8') as file:
 							clock = 0
 							while(1):
@@ -716,6 +758,9 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 								leng = len(line)
 								if leng > 0 and line[0] == "-":
 									spisok.append(line)
+
+									if "-f" in line or "-s" in line:
+										spisok_debug.append(line)
 									clock = 0
 									
 								else:
@@ -734,14 +779,26 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 
 						text_bat = f'bin\\openocd.exe {temp}'
 
-						filename = path_openocd + "openocd.bat"
+						filename = path_openocd + "flash.bat"
+						with open (filename, 'w', encoding='utf-8') as file:
+							file.write("echo off\ncls\n\n")
+							file.write(text_bat)
+
+						########
+						temp = ""
+						for line in spisok_debug:
+							temp += line + " "
+
+						text_bat = f'bin\\openocd.exe {temp}'
+
+						filename = path_openocd + "debug.bat"
 						with open (filename, 'w', encoding='utf-8') as file:
 							file.write("echo off\ncls\n\n")
 							file.write(text_bat)
 
 						#print_terminal(">> Start MCU flash...")
 
-						result = subprocess.Popen(["openocd.bat"], cwd=path_openocd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+						result = subprocess.Popen(["flash.bat"], cwd=path_openocd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 						stdout, stderr = result.communicate()
 
 						text = stderr.split("\n")
