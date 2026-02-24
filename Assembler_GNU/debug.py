@@ -855,6 +855,7 @@ class EditPeripheralCommand(sublime_plugin.TextCommand):
 							dynymic_text += f'<br><a class="group" href=".{periph}.{group}">{group}{space}</a>'
 
 						if menu[1] == group:
+							change = 1
 							for register in peripheral[periph][group]:
 								if isinstance(peripheral[periph][group][register], dict):
 									space =  "&nbsp;" * (19 - len(register))
