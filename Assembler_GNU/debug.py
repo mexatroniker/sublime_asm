@@ -885,6 +885,7 @@ class EditPeripheralCommand(sublime_plugin.TextCommand):
 													bitoffset = int(peripheral[periph][group][register][item]["bitoffset"])
 													bitwidth = int(peripheral[periph][group][register][item]["bitwidth"])
 													bits = value_bin[bitoffset:(bitoffset+bitwidth)]
+													bits = bits[::-1] # инвертируем биты
 													space =  "&nbsp;" * (18 - len(item))
 													
 													if len(bits) > 8:
