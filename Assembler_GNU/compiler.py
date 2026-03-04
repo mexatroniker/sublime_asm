@@ -5,7 +5,7 @@ import subprocess
 import os
 import shutil
 from .include import include, import_include
-from .Assembler_GNU import op_1, register
+from .Assembler_GNU import op_1, register, cond
 import time
 
 timer = 0
@@ -106,7 +106,7 @@ class CompileEquCommand(sublime_plugin.TextCommand):  # глобальные п�
 
 					# обработка <.EQU>
 					if ".equ" in line or ".EQU" in line:
-						line = line.replace(",", "").replace("\n", "").split("@")
+						line = line.replace(",", "").replace("\n", "").replace("   ", " ").replace("  ", " ").split("@")
 						if len(line) == 1:
 							line.append("")
 
@@ -400,7 +400,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 				if len(temp) > 1:
 					if "@" not in temp and "global" not in temp and "GLOBAL" not in temp:
 
-						spisok[i] = spisok[i].replace("\t", "$").replace("\n", "").replace("(", "( ").replace(")", " ) ").replace(">>", " >> ").replace("<<", " << ").replace("|", " | ").replace("+", " + ").replace("  ", " ")
+						spisok[i] = spisok[i].replace("\t", "$").replace("\n", "").replace("(", "( ").replace(")", " ) ").replace(">>", " >> ").replace("<<", " << ").replace("|", " | ").replace("+", " + ").replace("-", " - ").replace("[", "[ ").replace("]", " ]").replace("  ", " ")
 						spisok[i] = spisok[i].split(" ")
 						# spisok[i] -> строка в списке файла
 
@@ -461,7 +461,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 													global_label = f".global {spisok[i][n+k]}"
 													spisok[i][n+k] = bibliothek[global_label][1]
 												except:
-													if spisok[i][n+k] not in set_list and spisok[i][n+k] not in label_list:
+													if spisok[i][n+k] not in set_list and spisok[i][n+k] not in label_list and spisok[i][n+k] not in cond:
 														error += 1
 														print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : "{spisok[i][n+k]}" not found...')
 														

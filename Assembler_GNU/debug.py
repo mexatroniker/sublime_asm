@@ -264,7 +264,7 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 		global debug_focus
 
 		sublime.active_window().focus_view(debug_focus)
-		print(debug_focus.file_name())
+		
 		self.command = command
 		# Запускаем поток, чтобы не блокировать UI редактора
 		thread = threading.Thread(target=self.network_task, args=(command,))
@@ -280,6 +280,8 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 			try:
 				if command != "next":
 					SOCKET.sendall(f"{command}".encode('utf-8') + b'\x1a')
+					if command == "resume" or "reset" in command:
+						time.sleep(0.2)
 
 				create_terminal("")
 				print_terminal(f'>> OpenOCD: "{command}"')				
@@ -663,7 +665,7 @@ class BreakpointCommand(sublime_plugin.TextCommand):
 			time.sleep(0.2)
 			spisok = SOCKET.recv(1280).decode('utf-8').replace('\x1a', '').strip()
 			create_terminal("")			
-			print_terminal(f'>> OpenOCD: "Breakpoint set"')
+			print_terminal(f'>> OpenOCD: "Breakpoint set" 0x{self.addr}')
 			print_terminal(">> ")
 
 			'''

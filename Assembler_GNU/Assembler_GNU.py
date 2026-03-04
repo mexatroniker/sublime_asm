@@ -14,7 +14,8 @@ from .debug import stop_openocd
 print(f">> Python 3.8 active!")
 
 # список переменных
-register = ('R0','R1','R2','R3','R4','R5','R6','R7','R8','R9','R10','R11','R12','LR','SP','PC','IP')
+register = ('R0','R1','R2','R3','R4','R5','R6','R7','R8','R9','R10','R11','R12','LR','SP','PC','IP','S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15','S16','S17','S18','S19','S20','S21','S22','S23','S24','S25','S26','S27','S28','S29','S30','S31')
+copro = ('VABS','VADD','VCMP','VCMPE','VCVT','VCVTR','VCVTB','VCVTT','VDIV','VFMA','VFNMA','VFMS','VFNMS','VLDM','VLDR','VLMA','VLMS','VMOV','VMRS','VMSR','VMUL','VNEG','VNMLA','VNMLS','VNMUL','VPOP','VPUSH','VSQRT','VSTM','VSTR','VSUB')
 cond = ('EQ', 'NE','CS','HS','CC','LO','MI','PL','VS','VC','HI','LS','GE','LT','GT','LE','AL')
 oper = ('SEL', 'CBZ', 'CBNZ', 'TBB', 'TBH', 'BKPT', 'CPSIE', 'CPSID')
 oper_cond = ('CLREX', 'PUSH', 'POP', 'LDM', 'STM', 'LDMIA', 'LDMDB', 'LDMFD', 'LDMEA', 'STMIA', 'STMDB', 'STMFD', 'STMEA', 'ADR', 'WFE', 'WFI', 'DMB', 'DSB', 'ISB', 'MRS', 'MSR', 'NOP', 'SEV', 'SVC', 'CLZ', 'CMP', 'CMN', 'MOVT', 'REV', 'REV16', 'REVSH', 'RBIT', 'SADD16', 'SADD8', 'SHADD16', 'SHADD8', 'SHASX', 'SHSAX', 'SHSUB16', 'SHSUB8', 'SSUB16', 'SSUB8', 'SASX', 'SSAX', 'TST', 'TEQ', 'UADD16', 'UADD8', 'UASX', 'USAX', 'UHADD16', 'UHADD8', 'UHASX', 'UHSAX', 'UHSUB16', 'UHSUB8', 'USAD8', 'USADA8', 'USUB16', 'USUB8', 'UMULL', 'UMAAL', 'UMLAL', 'SMLAD', 'UMULL', 'UMLAL', 'SMULL', 'SMLAL', 'SDIV', 'UDIV', 'SSAT', 'USAT', 'SSAT16', 'USAT16', 'QADD', 'QSUB', 'QASX', 'QSAX', 'QDADD', 'QDSUB', 'UQASX', 'UQSAX', 'UQADD', 'UQSUB', 'PKHBT', 'PKHTB', 'SXT', 'UXT', 'SXTB', 'UXTB', 'SXTH', 'UXTH', 'SXTB16', 'UXTB16', 'SXTA', 'UXTA', 'SXTAB', 'UXTAB', 'SXTAH', 'UXTAH', 'SXTAB16', 'UXTAB16', 'BFC', 'BFI', 'SBFX', 'UBFX', 'SXT', 'UXT')
@@ -32,7 +33,7 @@ directive = ('MACRO', 'ENDM', 'SYNTAX', 'THUMB', 'CPU', 'FPU', 'EQU', 'INCLUDE',
 directive_include = ('INCLUDE', 'INCBIN')
 WORD = ('WORD', 'HWORD', 'BYTE', 'SHORT', 'SPACE', 'ASCII', 'ASCIZ', )
 
-op_1 = (oper + oper_cond + oper_s_cond + oper_xy_cond + oper_type_cond + oper_LDR_type_T_cond + oper_STR_type_T_cond + oper_branch_cond_register + oper_branch_cond_label + oper_IT)
+op_1 = (oper + oper_cond + oper_s_cond + oper_xy_cond + oper_type_cond + oper_LDR_type_T_cond + oper_STR_type_T_cond + oper_branch_cond_register + oper_branch_cond_label + oper_IT + copro)
 position = 0
 last_oper = ""
 after_label = 0
@@ -43,7 +44,7 @@ include_global = {}
 auto_modus = 0
 ##################### настройка отступа от начала строки ###################
 shift_1 = 20
-shift_2 = 28
+shift_2 = 26
 bracket_schift = 0
 macros = 0
 macros_shift = shift_2 - shift_1 + 4
