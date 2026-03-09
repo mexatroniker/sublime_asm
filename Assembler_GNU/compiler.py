@@ -449,6 +449,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 								else:
 									if spisok[i][n+k][0].isalpha() and spisok[i][n+k].replace(",", "") not in register:
 										try:
+											spisok[i][n+k] = spisok[i][n+k].replace("$","")
 											spisok[i][n+k] = bibliothek[spisok[i][n+k]][1]
 											# простая проверка есть ли значение в библиотеке
 

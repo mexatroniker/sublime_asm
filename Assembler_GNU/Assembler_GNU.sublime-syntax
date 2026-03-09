@@ -170,7 +170,7 @@ contexts:
         2: asm_label
 
     - match: '{{copro}}'
-      scope: asm_oper_cond
+      scope: asm_oper_cond        
 
   path:
     - meta_scope: asm_quote

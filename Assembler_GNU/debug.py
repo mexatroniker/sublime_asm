@@ -278,8 +278,17 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 		SOCKET = get_socket()
 		if SOCKET:
 			try:
+				
 				if command != "next":
+					if command == "reset run":
+						create_terminal("")
+						print_terminal(f'>> OpenOCD: "{command}"')
+						SOCKET.sendall(f"reset halt".encode('utf-8') + b'\x1a')
+						time.sleep(0.1)
+						command = "resume"
+					
 					SOCKET.sendall(f"{command}".encode('utf-8') + b'\x1a')
+
 					if command == "resume" or "reset" in command:
 						time.sleep(0.2)
 
