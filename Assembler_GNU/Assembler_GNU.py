@@ -432,7 +432,7 @@ class NewLineCorrectCommand(sublime_plugin.TextCommand): # обработка т
 			line_befor_cursor = sublime.Region(line_start.a, cursor_pos)	
 			current_line_cursor = self.view.substr(line_befor_cursor) 		# содержание строки до курсора
 						
-			if "(" in current_line_cursor and macro_check != 1:
+			if "(" in current_line_cursor and macro_check != 1 and "@" not in current_line_cursor:
 				for i in range(len(current_line_cursor)):
 					if current_line_cursor[i] == "(":
 						bracket_schift = i
@@ -459,7 +459,7 @@ class NewLineCorrectCommand(sublime_plugin.TextCommand): # обработка т
 			if "-" in current_line and current_directive_line[0] != "." and "POP" not in current_line and "PUSH" not in current_line and "@" not in current_line:
 				current_line = current_line.replace("-", " - ").replace(",", ", ").replace(",  ", ", ").replace("  -  ", " - ")
 
-			if ")" in current_line_cursor and macro_check != 1:
+			if ")" in current_line_cursor and macro_check != 1 and "@" not in current_line_cursor:
 				bracket = 2
 				current_line = current_line.replace(")", " )").replace("  )", " )")
 							

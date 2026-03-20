@@ -210,6 +210,7 @@ class DebugLinebCommand(sublime_plugin.TextCommand):
 ##################
 def lines_to_bibl(path):
 	global lines_bibl
+	lines_bibl = {}
 
 	with open (path, 'r', encoding='utf-8') as file:
 		while(1):
@@ -226,6 +227,7 @@ def lines_to_bibl(path):
 def addr_to_bibl(path, name):
 	global addr_bibl
 	global lines_bibl
+	addr_bibl = {}
 
 	clock = 0
 	with open (path, 'r', encoding='utf-8') as file:
@@ -650,7 +652,8 @@ class BreakpointCommand(sublime_plugin.TextCommand):
 			target = [path, str(line)]
 			
 			self.addr = next((k for k, v in addr_bibl.items() if v == target), None)
-			
+			#print_terminal(target)
+			#print_terminal(self.addr)
 			if self.addr:
 				self.line_position = self.view.line(point)
 				self.line_text = self.view.substr(self.line_position)

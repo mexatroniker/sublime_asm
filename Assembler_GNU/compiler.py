@@ -447,7 +447,8 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 									spisok[i][n+k] = " "
 								# функция замены include в строке
 								else:
-									if spisok[i][n+k][0].isalpha() and spisok[i][n+k].replace(",", "") not in register:
+									if spisok[i][n+k][0].isalpha() and spisok[i][n+k].replace(",", "").replace("$", "") not in register:
+
 										try:
 											spisok[i][n+k] = spisok[i][n+k].replace("$","")
 											spisok[i][n+k] = bibliothek[spisok[i][n+k]][1]

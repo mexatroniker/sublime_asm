@@ -154,7 +154,7 @@ contexts:
       captures:
         1: asm_macro
 
-    - match: '\=\s*([a-z_]+)+'
+    - match: '\=\s*([a-z_]+[0-9]*)+'
       captures:
         1: asm_label
     
@@ -170,7 +170,11 @@ contexts:
         2: asm_label
 
     - match: '{{copro}}'
-      scope: asm_oper_cond        
+      scope: asm_oper_cond 
+
+    - match: '({{oper_cond}})+(\,+)+(\s+[a-z_]+[0-9]*)+'
+      captures:
+        4: asm_label    
 
   path:
     - meta_scope: asm_quote
