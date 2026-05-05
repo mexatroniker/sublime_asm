@@ -5,7 +5,7 @@ import subprocess
 import os
 import shutil
 from .include import include, import_include
-from .Assembler_GNU import op_1, register, cond
+from .Assembler_GNU import op_1, register, cond, WORD
 import time
 
 timer = 0
@@ -21,6 +21,7 @@ op_1 = list(op_1)
 for i in range(len(op_1)):
 	op_1[i] = op_1[i][:3]
 op_1 = tuple(op_1)
+
 
 #####################
 class CompileAndFlashCommand(sublime_plugin.TextCommand): 		# компиляция и прошивка проекта
@@ -112,6 +113,22 @@ class CompileEquCommand(sublime_plugin.TextCommand):  # глобальные п�
 
 						comment = f"from <{name}>   {line[1]}"
 						line = line[0].split(" ")[1:]
+
+						# если в EQU не просто значение, а выражение то вычисляем его
+						line_value = line[1:]
+						value = ""
+						for i in range(len(line_value)):
+							if line_value[i] in include_global:
+								line_value[i] = str(include_global[line_value[i]][0])
+
+						for i in line_value:
+							value += i.replace("\t", "").replace(" ", "")
+
+						try:
+							line[1] = round(eval(value))	
+						except:
+							None
+						###########
 
 						try:
 							try:
@@ -398,7 +415,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 				temp = spisok[i]
 
 				if len(temp) > 1:
-					if "@" not in temp and "global" not in temp and "GLOBAL" not in temp:
+					if "@" not in temp and "global" not in temp and "GLOBAL" not in temp and "equ" not in temp and "EQU" not in temp:
 
 						spisok[i] = spisok[i].replace("\t", "$").replace("\n", "").replace("(", "( ").replace(")", " ) ").replace(">>", " >> ").replace("<<", " << ").replace("|", " | ").replace("+", " + ").replace("-", " - ").replace("[", "[ ").replace("]", " ]").replace("  ", " ")
 						spisok[i] = spisok[i].split(" ")
@@ -417,18 +434,29 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 								print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : <macros> "{macros_op}" not found...')
 							else:
 								temp = temp.replace("(", " ").replace(")", " ")
+					
 
-						for k in range(len_spisok): 		# определяем индекс OPER -> k
-							item = spisok[i][k].replace("$", "")[0:3]
-							if item in op_1 or "B" in item:
-								oper = item
-								break
-						
+						if len(spisok[i]) >= 2:
+							if ":" in spisok[i][0]:
+								k = 1
+							for k in range(k, len_spisok): 		# определяем индекс OPER -> k
+								item_word = spisok[i][k].replace("$", "").replace(".", "")
+								item = item_word[0:3]
+								
+								if len(item) > 0:
+									if item in op_1 or item[0] == "B" or item_word in WORD:
+										if item_word in WORD:
+											oper = item_word
+										else:
+											oper = item
+										break
+								# если в начале строки стоит метка : то считываем следующую ячейку
+																	
+
 						len_oper = len(spisok[i][k].replace("$", ""))
-						if len_oper > 3: len_oper -= 1
+						if len_oper > 3: len_oper = 3
 						
-						if oper in op_1 or "B" in oper:
-
+						if oper in op_1 or "B" in oper or oper in WORD:
 							spisok[i][k] += " " * (6 - len_oper)
 							
 							temp = "" 			# сохраняем первую часть строки с OPER
@@ -441,13 +469,14 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 								temp += char
 
 							temp_spisok = spisok[i][k:]
-
+							
 							for n in range(1, len(temp_spisok)):
 								if spisok[i][n+k] == "":
 									spisok[i][n+k] = " "
 								# функция замены include в строке
 								else:
-									if spisok[i][n+k][0].isalpha() and spisok[i][n+k].replace(",", "").replace("$", "") not in register:
+									value = spisok[i][n+k]
+									if value[0].isalpha() and value.replace(",", "").replace("$", "") not in register:
 
 										try:
 											spisok[i][n+k] = spisok[i][n+k].replace("$","")
@@ -463,14 +492,14 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 													global_label = f".global {spisok[i][n+k]}"
 													spisok[i][n+k] = bibliothek[global_label][1]
 												except:
-													if spisok[i][n+k] not in set_list and spisok[i][n+k] not in label_list and spisok[i][n+k] not in cond:
+													if spisok[i][n+k] not in set_list and spisok[i][n+k] not in label_list and spisok[i][n+k] not in cond and oper not in WORD:
 														error += 1
 														print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : "{spisok[i][n+k]}" not found...')
-														
+									temp += " "
 											
 								temp += spisok[i][n+k]
 
-							temp += temp_comment + "\n"
+							#temp += temp_comment + "\n"
 							temp = temp.replace("$", "\t").replace(",", ", ")
 						
 							

@@ -159,13 +159,29 @@ class ImportEquCommand(sublime_plugin.TextCommand):  # глобальные пе
 
 					# обработка <.EQU>
 					if ".equ" in line or ".EQU" in line:
-						line = line.replace(",", "").replace("\n", "").split("@")
+						line = line.replace(",", "").replace("\n", "").replace("   ", " ").replace("  ", " ").split("@")
 						if len(line) == 1:
 							line.append("")
 
 						comment = f"from <{name}>   {line[1]}"
 						line = line[0].split(" ")[1:]
 
+						# если в EQU не просто значение, а выражение то вычисляем его
+						line_value = line[1:]
+						value = ""
+						for i in range(len(line_value)):
+							if line_value[i] in include_global:
+								line_value[i] = str(include_global[line_value[i]][0])
+
+						for i in line_value:
+							value += i.replace("\t", "").replace(" ", "")
+
+						try:
+							line[1] = round(eval(value))	
+						except:
+							None
+						###########
+						
 						try:
 							try:
 								include_global[line[0]] = [int(line[1]), f"{hex(int(line[1]))}", comment]

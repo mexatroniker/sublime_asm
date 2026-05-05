@@ -76,7 +76,7 @@ def import_include(path_file, bibl_name): 		# Функция импорта incl
 					# list[0] = name
 					# list[1] = value
 					
-				
+					
 					stroka[2] = f"{hex(eval(stroka[2]))}"		# делаем вычисления в ячейке, если там не только значение
 					exec(f"{stroka[0]} = {stroka[2]}") 		# создаем переменную
 					stroka.append(stroka_comment)
