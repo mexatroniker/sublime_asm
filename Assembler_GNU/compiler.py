@@ -318,11 +318,23 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 							
 						######################
 						# обрабатываем строку со скобками
-						if "(" in line and ")" not in line:
+						if "(" in line and ")" not in line and "@" not in line:
 
 							temp_line = line
+							skobka_fuse = 30 		# количество строк после скобки, если забыли поставить закрывающую
+							skobka_fuse_number = number
+
 							while(1):
+								###### проверка закрыта ли скобка 
+								skobka_fuse -= 1								
+								if skobka_fuse < 0:
+									error += 1 
+									print_terminal(f"Attention: Missing closing ) in file <{name}> line: {skobka_fuse_number}")
+									break
+								######
+
 								number += 1
+
 								line = file.readline().replace("\t", "")
 								i = 0
 								for i in range(len(line)):
