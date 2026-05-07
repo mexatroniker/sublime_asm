@@ -1,10 +1,13 @@
 # Считываение XML файла в словарь bibl
+import copy
 
 ###################
 def xml_to_bibl(path):
 	bibl = {}
 
 	with open (path, 'r', encoding='utf-8') as file:
+		file_name = path.split("\\")[-1].split(".")[0]
+		
 		while(1):
 			stroka = file.readline()
 			if "<peripherals>" in stroka: break
@@ -12,12 +15,20 @@ def xml_to_bibl(path):
 		while(1):
 			stroka = file.readline()
 			###############
-			if "<peripheral>" in stroka:
+			if "<peripheral>" in stroka or "<peripheral derived" in stroka:
 
 				flag_name = 0
 				flag_description = 0
 				flag_baseaddress = 0
 				flag_group = 0
+				flag_derived = 0
+				derived_from = ""
+
+
+				if "derived" in stroka:  		# если регистры копируются из другой перефирии
+					flag_derived = 1
+					derived_from = stroka.split("=")[1].replace('"', "").replace(">", "").replace("\n","")
+					
 
 				while(1):
 					temp_stroka = file.readline().replace("\t", "").replace("\n", "")
@@ -47,14 +58,35 @@ def xml_to_bibl(path):
 						baseaddress = stroka
 						flag_baseaddress = 1
 
+						if flag_derived == 1: 			# если регистры копируется из другой переферии							
+							group = name
+
+							for key in bibl: 			# узнали название группы
+								if derived_from in bibl[key]:
+									group = key	
+									break
+
+							register = copy.deepcopy(bibl[group][derived_from])
+							register["baseaddress"] = baseaddress
+							register_group = {}														
+							register_group[name] = register							
+							bibl.setdefault(group, {}) 	# если группа отсутствует то она создастся
+							bibl[group].update(register_group)
+
+							break
+
 					elif "<registers>" in stroka:
 						register_group = {}
 						register = {}
+						if flag_description == 0:
+							description = "No description"
 						register["description"] = description
-						register["baseaddress"] = baseaddress
+						register["baseaddress"] = baseaddress						
 						register_group[name] = register
+						if flag_group == 0:
+							group = file_name 			# если нет названия группы -> берется название файла
 						bibl.setdefault(group, {})
-						bibl[group].update(register_group)						
+						bibl[group].update(register_group)	
 						break
 			
 			#################

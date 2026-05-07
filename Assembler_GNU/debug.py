@@ -28,6 +28,9 @@ class DebugOpenocdCommand(sublime_plugin.TextCommand): 		# отладка про
 		global start
 		global peripheral
 		global debug_focus
+		global peripheral
+
+		peripheral = {}
 
 		syntax = (sublime.active_window().active_view().settings().get('syntax')).split("/")[-1].split(".")[0]
 		if syntax == "Assembler_GNU":
@@ -103,14 +106,12 @@ class DebugOpenocdCommand(sublime_plugin.TextCommand): 		# отладка про
 			folder_list = os.listdir(path_inc)
 			xml = ""
 			for file in folder_list:
-				if ".xml" in file or ".XML" in file:
+				if ".xml" in file or ".XML" in file or ".svd" in file or ".SVD" in file:
 					xml = file
-					break
+					path_xml = path + f"inc\\{xml}"
+					peripheral.update(xml_to_bibl(path_xml))					
 
-			if xml != "":
-				path_xml = path + f"inc\\{xml}"
-				peripheral = xml_to_bibl(path_xml)			
-
+			if xml != "":				
 				sublime.set_timeout(lambda: sublime.active_window().run_command("update_peripheral"), 0)
 			else:			
 				text = "\n >> Please place the file with\n   peripherals in </inc> folder..."
