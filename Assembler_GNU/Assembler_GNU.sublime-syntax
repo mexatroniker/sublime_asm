@@ -28,7 +28,7 @@ variables:
   type_LDR: (B|H|SB|SH)*
   T: (T)*
   directive: (SYNTAX|THUMB|CPU|FPU|EQU|INCLUDE|INCBIN|SECTION|ALIGN|WEAK|SET|ARM|CODE16|CODE32|FORCE_THUMB|THUMB_FUNC|LTORG|ORG|syntax|thumb|cpu|fpu|equ|include|incbin|section|align|weak|set|arm|code16|code32|force_thumb|thumb_func|ltorg|org)
-  WORD: (WORD|HWORD|BYTE|SHORT|SPACE|ASCII|ASCIZ|ENDM|word|hword|byte|short|space|ascii|asciz|endm)
+  WORD: (WORD|HWORD|BYTE|SHORT|SPACE|ASCII|ASCIZ|ENDM|IF|ELSE|ENDIF|word|hword|byte|short|space|ascii|asciz|endm|if|else|endif)
   COMMENT: (@|;|#)
   copro: (VABS|VADD|VCMP|VCMPE|VCVTR|VCVTT|VCVTB|VCVT|VDIV|VFMA|VFNMA|VFMS|VFNMS|VLDM|VLDR|VLMA|VLMS|VMOV|VMRS|VMSR|VMUL|VNEG|VNMLA|VNMLS|VNMUL|VPOP|VPUSH|VSQRT|VSTM|VSTR|VSUB)
 

@@ -29,7 +29,7 @@ oper_branch_cond_label = ('BL', 'B')
 oper_IT = ('IT',)
 oper_stack = ('POP', 'PUSH')
 oper_mem = ('LDR', 'STR')
-directive = ('MACRO', 'ENDM', 'SYNTAX', 'THUMB', 'CPU', 'FPU', 'EQU', 'INCLUDE', 'INCBIN', 'SECTION', 'ALIGN', 'GLOBAL', 'WEAK', 'SET', 'ARM', 'CODE16', 'CODE32', 'FORCE_THUMB', 'THUMB_FUNC', 'LTORG', 'ORG')
+directive = ('MACRO', 'ENDM', 'SYNTAX', 'THUMB', 'CPU', 'FPU', 'EQU', 'INCLUDE', 'INCBIN', 'SECTION', 'ALIGN', 'GLOBAL', 'WEAK', 'SET', 'ARM', 'CODE16', 'CODE32', 'FORCE_THUMB', 'THUMB_FUNC', 'LTORG', 'ORG', 'IF', 'ELSE', 'ENDIF')
 directive_include = ('INCLUDE', 'INCBIN')
 WORD = ('WORD', 'HWORD', 'BYTE', 'SHORT', 'SPACE', 'ASCII', 'ASCIZ', )
 
@@ -458,7 +458,7 @@ class NewLineCorrectCommand(sublime_plugin.TextCommand): # обработка т
 				current_line = current_line.replace("(", "( ").replace("(  ", "( ")
 				
 			if "=" in current_line:
-				current_line = current_line.replace("=", "= ").replace("=  ", "= ")
+				current_line = current_line.replace("=", "= ").replace("=  ", "= ").replace("= =", "==")
 
 			if "|" in current_line:
 				current_line = current_line.replace("|", "| ").replace("|", " |").replace("|  ", "| ").replace("  |", " |")
@@ -773,7 +773,7 @@ class SpacerCommand(sublime_plugin.TextCommand):
 		current_line = current_line[leng_label:]
 
 		space = shift - len(current_label)
-		if space >= 0:
+		if space > 0:
 			current_label += " " * space
 		else:
 			current_label += " "

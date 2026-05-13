@@ -408,7 +408,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 			debug_lines[list_name] = eval(current_file) 	# библиотека с номерами линий файла _asm
 
 			for i in range(len(spisok)):
-				spisok[i] = spisok[i].replace("#", "@").replace(";", "@").replace("=", "= ")
+				spisok[i] = spisok[i].replace("#", "@").replace(";", "@").replace("=", "= ").replace("= = ", "==")
 				
 				spisok[i] = spisok[i].split("@")
 				if len(spisok[i]) > 1:
