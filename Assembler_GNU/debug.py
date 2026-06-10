@@ -341,10 +341,20 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 					if spisok[i][1].upper() == "PC":
 						self.pc = spisok[i][3].replace("0x", "")
 
+					if spisok[i][1].upper() == "XPSR":
+						flag = f"{int(spisok[i][3], 16):032b}"
+						flags = f"            {flag[0]} {flag[1]} {flag[2]} {flag[3]} {flag[4]} {flag[12:16]}\n"
+
+						registers +=  "---------------------------\n"
+						registers += f"Flag:     : N Z C V Q  GE\n"
+						registers += flags
+						registers +=  "---------------------------\n"
+
 					if i <= 12 or i >= 23:
 						spisok[i] = f"{spisok[i][1].upper():<9} : {spisok[i][3]:>10} :: {int(spisok[i][3], 16)}"
 					else:
 						spisok[i] = f"{spisok[i][1].upper():<9} : {spisok[i][3]:>10} :: "
+
 					registers += spisok[i] + "\n"
 
 				except:

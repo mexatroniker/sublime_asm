@@ -5,7 +5,7 @@ import subprocess
 import os
 import shutil
 from .include import include, import_include
-from .Assembler_GNU import op_1, register, cond, WORD
+from .Assembler_GNU import op_1, register, cond, WORD, oper_shift
 import time
 
 timer = 0
@@ -483,33 +483,36 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 							temp_spisok = spisok[i][k:]
 							
 							for n in range(1, len(temp_spisok)):
-								if spisok[i][n+k] == "":
-									spisok[i][n+k] = " "
+								spisok_value = spisok[i][n+k]
+								if spisok_value == "":
+									spisok_value = " "
 								# функция замены include в строке
 								else:
 									value = spisok[i][n+k]
-									if value[0].isalpha() and value.replace(",", "").replace("$", "") not in register:
+									value_clear = value.replace(",", "").replace("$", "")									
+
+									if value[0].isalpha() and value_clear not in register:
 
 										try:
-											spisok[i][n+k] = spisok[i][n+k].replace("$","")
-											spisok[i][n+k] = bibliothek[spisok[i][n+k]][1]
+											spisok_value = spisok_value.replace("$","")
+											spisok_value = bibliothek[spisok_value][1]
 											# простая проверка есть ли значение в библиотеке
 
 										except:									
 											try:
-												global_label = f".GLOBAL {spisok[i][n+k]}"
-												spisok[i][n+k] = bibliothek[global_label][1]										
+												global_label = f".GLOBAL {spisok_value}"
+												spisok_value = bibliothek[global_label][1]										
 											except:
 												try:
-													global_label = f".global {spisok[i][n+k]}"
-													spisok[i][n+k] = bibliothek[global_label][1]
+													global_label = f".global {spisok_value}"
+													spisok_value = bibliothek[global_label][1]
 												except:
-													if spisok[i][n+k] not in set_list and spisok[i][n+k] not in label_list and spisok[i][n+k] not in cond and oper not in WORD:
+													if spisok_value not in set_list and spisok_value not in label_list and spisok_value not in cond and oper not in WORD and spisok_value not in oper_shift:
 														error += 1
-														print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : "{spisok[i][n+k]}" not found...')
+														print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : "{spisok_value}" not found...')
 									temp += " "
 											
-								temp += spisok[i][n+k]
+								temp += spisok_value
 
 							#temp += temp_comment + "\n"
 							temp = temp.replace("$", "\t").replace(",", ", ")

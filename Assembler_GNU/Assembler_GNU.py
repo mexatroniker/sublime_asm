@@ -29,6 +29,7 @@ oper_branch_cond_label = ('BL', 'B')
 oper_IT = ('IT',)
 oper_stack = ('POP', 'PUSH')
 oper_mem = ('LDR', 'STR')
+oper_shift = ('LSL', 'LSR', 'ASR', 'ROR', 'RRX')
 directive = ('MACRO', 'ENDM', 'SYNTAX', 'THUMB', 'CPU', 'FPU', 'EQU', 'INCLUDE', 'INCBIN', 'SECTION', 'ALIGN', 'GLOBAL', 'WEAK', 'SET', 'ARM', 'CODE16', 'CODE32', 'FORCE_THUMB', 'THUMB_FUNC', 'LTORG', 'ORG', 'IF', 'ELSE', 'ENDIF')
 directive_include = ('INCLUDE', 'INCBIN')
 WORD = ('WORD', 'HWORD', 'BYTE', 'SHORT', 'SPACE', 'ASCII', 'ASCIZ', )
@@ -610,6 +611,7 @@ class SpacerCommand(sublime_plugin.TextCommand):
 			bevor_word = bevor_word.upper()
 
 			directive_line = current_line.replace("\t", "") 		# если директивы в строке еще не было
+			
 			if directive_line[0] == "." and current_word.upper() in directive:
 				directive_line = directive_line.replace(current_word, current_word.upper())
 				self.view.replace(edit, line_start, text=directive_line)
