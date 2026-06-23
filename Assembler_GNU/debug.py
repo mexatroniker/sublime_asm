@@ -350,14 +350,68 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 						registers += flags
 						registers +=  "---------------------------\n"
 
-					if i <= 12 or i >= 23:
+					if i <= 12:
 						spisok[i] = f"{spisok[i][1].upper():<9} : {spisok[i][3]:>10} :: {int(spisok[i][3], 16)}"
 					else:
-						spisok[i] = f"{spisok[i][1].upper():<9} : {spisok[i][3]:>10} :: "
+						if spisok[i][1][0] == "d":
+							nummer = int(spisok[i][1].replace("d", "")) * 2
+							d_value = spisok[i][3].replace("0x", "")
+							hex_0 = d_value[8:16]
+							hex_1 = d_value[0:8]
+							dec_0 = int(hex_0, 16)
+							dec_1 = int(hex_1, 16)
+							bin_0 = f"{dec_0:032b}"
+							bin_1 = f"{dec_1:032b}"
+
+							################### mantisa ##########
+							bin_data = [bin_0, bin_1]
+							result = [dec_0, dec_1]
+							null_after = 8
+
+							for m in range(2):
+								znak = ""
+								if bin_data[m][0] == "1":
+									znak = "-"									
+
+								exp = int(bin_data[m][1:9], 2)
+
+								if exp != 0 and exp != 4294967295:
+
+									exp =  exp - 127
+									exp = 2 ** exp							
+								
+									mantisa = ""
+									mantisa = "1" + bin_data[m][9:]
+									n = len(mantisa) - 1
+									
+									for i in range(n, 0, -1):
+										if mantisa[i] == "1":
+											mantisa = mantisa[:i+1]									
+											break
+									
+									mantisa_dec = 0
+									for i in range(len(mantisa)):								
+										mantisa_dec += int(mantisa[i]) * (1 / (2 ** i))
+
+									calc = str(round(exp*mantisa_dec, null_after))
+
+									if "e" in calc:
+										temp_calc = calc.split("e")
+										calc = f"{temp_calc[0][:8]}e{temp_calc[1]}"
+
+									result[m] = f"{znak}{calc}"
+								
+							##########################################
+							
+							spisok[i] = f"S{nummer:<2} : 0x{hex_0:>8} :: {result[0]}\nS{nummer+1:<2} : 0x{hex_1:>8} :: {result[1]}"
+						
+						else:
+							spisok[i] = f"{spisok[i][1].upper():<9} : {spisok[i][3]:>10} :: "
 
 					registers += spisok[i] + "\n"
 
-				except:
+				except Exception as err:
+					#print(err)
 					None
 		else: registers = ">> Waiting halt mode..."
 		

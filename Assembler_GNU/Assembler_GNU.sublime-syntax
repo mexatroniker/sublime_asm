@@ -163,10 +163,9 @@ contexts:
     - match: '&'
       push: break_point
 
-    - match: '::(\s+)+(\w+)+'
+    - match: '::(\s+)([0-9\.\-]+)+'
       captures:
-        1: asm_register
-        2: asm_label
+        2: asm_label        
 
     - match: '{{copro}}'
       scope: asm_oper_cond 

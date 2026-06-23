@@ -4,3 +4,4 @@
 * 07.05.2026 - Debug: XML file import functionality has been improved. Feature for reading multiple files has been added
 * 13.05.2026 - Syntax: Conditional compilation (.IF, .ELSE, .ENDIF) was added
 * 10.06.2026 - Debug: Added PSR flags in registers window
+* 23.06.2026 - Debug: Added automatic conversion of FPU register values ​​to decimal

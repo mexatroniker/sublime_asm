@@ -117,7 +117,8 @@ def xml_to_bibl(path):
 						register = {}
 						register["addressoffset"] = addressoffset
 						bibl[group][name][register_name] = register						
-						
+						flag_field_name = 1
+
 						while(1):
 							temp_stroka = file.readline().replace("\t", "").replace("\n", "")
 							stroka = ""
@@ -125,10 +126,14 @@ def xml_to_bibl(path):
 							for i in range(len(temp_stroka)):
 								if temp_stroka[i] == "<": break
 								stroka = temp_stroka[i+1:]
-							
-							if "<name>" in stroka:
+
+							if "<field>" in stroka:
+								flag_field_name = 0
+
+							if "<name>" in stroka and flag_field_name == 0:
 								stroka = stroka.replace("<name>", "").replace("</name>", "")
 								field_name = stroka
+								flag_field_name = 1
 							
 							elif "<description>" in stroka:
 								stroka = stroka.replace("<description>", "").replace("</description>", "")
