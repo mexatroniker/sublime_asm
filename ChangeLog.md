@@ -5,3 +5,4 @@
 * 13.05.2026 - Syntax: Conditional compilation (.IF, .ELSE, .ENDIF) was added
 * 10.06.2026 - Debug: Added PSR flags in registers window
 * 23.06.2026 - Debug: Added automatic conversion of FPU register values ​​to decimal
+* 23.06.2026 - Debug: Added signed representation of the number for registers

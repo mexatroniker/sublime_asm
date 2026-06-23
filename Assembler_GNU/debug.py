@@ -351,7 +351,11 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 						registers +=  "---------------------------\n"
 
 					if i <= 12:
-						spisok[i] = f"{spisok[i][1].upper():<9} : {spisok[i][3]:>10} :: {int(spisok[i][3], 16)}"
+						value = int(spisok[i][3], 16)
+						if value > 2147483647:
+							value = value - 4294967296
+
+						spisok[i] = f"{spisok[i][1].upper():<9} : {spisok[i][3]:>10} :: {value}"
 					else:
 						if spisok[i][1][0] == "d":
 							nummer = int(spisok[i][1].replace("d", "")) * 2
@@ -375,7 +379,7 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 
 								exp = int(bin_data[m][1:9], 2)
 
-								if exp != 0 and exp != 4294967295:
+								if exp != 0 and exp != 255:
 
 									exp =  exp - 127
 									exp = 2 ** exp							
@@ -395,12 +399,16 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 
 									calc = str(round(exp*mantisa_dec, null_after))
 
-									if "e" in calc:
+									if "e" in calc and znak == "-":
 										temp_calc = calc.split("e")
 										calc = f"{temp_calc[0][:8]}e{temp_calc[1]}"
+										
 
 									result[m] = f"{znak}{calc}"
 								
+								elif result[m] > 2147483647:
+										result[m] = result[m] - 4294967296
+
 							##########################################
 							
 							spisok[i] = f"S{nummer:<2} : 0x{hex_0:>8} :: {result[0]}\nS{nummer+1:<2} : 0x{hex_1:>8} :: {result[1]}"
@@ -411,7 +419,7 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 					registers += spisok[i] + "\n"
 
 				except Exception as err:
-					#print(err)
+					print(err)
 					None
 		else: registers = ">> Waiting halt mode..."
 		
