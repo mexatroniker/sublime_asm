@@ -5,7 +5,7 @@ import subprocess
 import os
 import shutil
 from .include import include, import_include
-from .Assembler_GNU import op_1, register, cond, WORD, oper_shift
+from .Assembler_GNU import op_1, register, cond, WORD, oper_shift, oper as oper_cpu
 import time
 
 timer = 0
@@ -21,6 +21,12 @@ op_1 = list(op_1)
 for i in range(len(op_1)):
 	op_1[i] = op_1[i][:3]
 op_1 = tuple(op_1)
+
+###### преобразуем список OPER_CPU до 3 знаков
+oper_cpu = list(oper_cpu)
+for i in range(len(oper_cpu)):
+	oper_cpu[i] = oper_cpu[i][:3]
+oper_cpu = tuple(oper_cpu)
 
 
 #####################
@@ -427,7 +433,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 				temp = spisok[i]
 
 				if len(temp) > 1:
-					if "@" not in temp and "global" not in temp and "GLOBAL" not in temp and "equ" not in temp and "EQU" not in temp:
+					if "@" not in temp and "global" not in temp and "GLOBAL" not in temp and "equ" not in temp and "EQU" not in temp and "{" not in temp and "}" not in temp:
 
 						spisok[i] = spisok[i].replace("\t", "$").replace("\n", "").replace("(", "( ").replace(")", " ) ").replace(">>", " >> ").replace("<<", " << ").replace("|", " | ").replace("+", " + ").replace("-", " - ").replace("[", "[ ").replace("]", " ]").replace("  ", " ")
 						spisok[i] = spisok[i].split(" ")
@@ -507,8 +513,8 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 													global_label = f".global {spisok_value}"
 													spisok_value = bibliothek[global_label][1]
 												except:
-													if spisok_value not in set_list and spisok_value not in label_list and spisok_value not in cond and oper not in WORD and spisok_value not in oper_shift:
-														error += 1
+													if spisok_value not in set_list and spisok_value not in label_list and spisok_value not in cond and oper not in WORD and spisok_value not in oper_shift and oper not in oper_cpu:
+														error += 1																												
 														print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : "{spisok_value}" not found...')
 									temp += " "
 											

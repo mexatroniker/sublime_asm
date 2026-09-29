@@ -21,6 +21,8 @@ openocd_process = None
 start = 0
 SOCKET = None
 
+resume_break = 1
+
 ##################
 class DebugOpenocdCommand(sublime_plugin.TextCommand): 		# отладка проекта
 	def run(self, edit):
@@ -296,18 +298,36 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 						time.sleep(0.2)
 
 				create_terminal("")
-				print_terminal(f'>> OpenOCD: "{command}"')				
+				print_terminal(f'>> OpenOCD: "{command}"')
 
 				SOCKET.sendall(f"targets".encode('utf-8') + b'\x1a')
 				time.sleep(0.2)
 				self.read_answer()
 				
 			except Exception as e:
-				self.on_error(str(e))
+				if "recv" not in str(e) and "sendall" not in str(e):
+					self.on_error(str(e))
 
 	################
 	def read_answer(self):
+		global resume_break
+
 		response = SOCKET.recv(256).decode('utf-8').replace('\x1a', '').strip()
+		
+		if self.command == "resume" and "halted" not in response:
+			resume_break = 0 											# входим в режим ожидания
+			sublime.set_timeout(lambda: self.registers_read(0), 100)
+			while(1):				
+				time.sleep(0.2)
+				SOCKET.sendall(f"targets".encode('utf-8') + b'\x1a')
+				time.sleep(0.2)
+				response = SOCKET.recv(256).decode('utf-8').replace('\x1a', '').strip()
+				
+				if "halted" in response or resume_break == 1:
+					resume_break = 1
+					break
+
+
 		if "halted" in response:			
 			SOCKET.sendall(f"reg".encode('utf-8') + b'\x1a')
 			time.sleep(0.2)
@@ -323,6 +343,7 @@ class OpenocdSendCommand(sublime_plugin.WindowCommand):
 
 		else:
 			sublime.set_timeout(lambda: self.registers_read(0), 100)
+			
 		print_terminal(">> ")
 		sublime.active_window().run_command("update_peripheral", {"current_menu": menu_item})
 
@@ -638,6 +659,9 @@ class AddPanelButtonCommand(sublime_plugin.WindowCommand):
 		
 
 	def on_click(self, href):
+		global resume_break
+		resume_break = 1
+
 		sublime.active_window().focus_view(debug_focus)
 		if href == "stop":
 			stop_openocd()
@@ -645,7 +669,7 @@ class AddPanelButtonCommand(sublime_plugin.WindowCommand):
 		elif href == "run":
 			sublime.active_window().run_command("openocd_start")
 			
-		else:
+		else:			
 			sublime.active_window().run_command("openocd_send", {"command": href})
 		
 
@@ -734,7 +758,7 @@ class BreakpointCommand(sublime_plugin.TextCommand):
 				items = ["Breakpoint Set", "Breakpoint Delete"]	# index	
 				self.view.show_popup_menu(items, self.on_done)
 
-		self.view.set_read_only(True)
+			self.view.set_read_only(True)
 
 	def on_done(self, index):
 		global SOCKET

@@ -20,12 +20,12 @@ variables:
   oper_branch_cond_label: (BL|B)
   oper_branch_cond_register: (BLX|BX)
   oper_IT: (IT)
-  cond: (EQ|NE|CS|HS|CC|LO|MI|PL|VS|VC|HI|LS|GE|LT|GT|LE|AL)*
+  cond: (EQ|NE|CS|HS|CC|LO|MI|PL|VS|VC|HI|LS|GE|LT|GT|LE|AL|APSR|IPSR|EPSR|PSR|XPSR|IAPSR|EAPSR|IEPSR|MSP|PSP|PRIMASK|BASEPRI|BASEPRI_MAX|FAULTMASK|CONTROL)*
   s: (S)*
   xy: (LDX|BT|TB|B|T|X|R)*
   width: (.W|.N)*
-  type: (B|H)*
-  type_LDR: (B|H|SB|SH)*
+  type: (B|H|D)*
+  type_LDR: (B|H|D|SB|SH)*
   T: (T)*
   directive: (SYNTAX|THUMB|CPU|FPU|EQU|INCLUDE|INCBIN|SECTION|ALIGN|WEAK|SET|ARM|CODE16|CODE32|FORCE_THUMB|THUMB_FUNC|LTORG|ORG|syntax|thumb|cpu|fpu|equ|include|incbin|section|align|weak|set|arm|code16|code32|force_thumb|thumb_func|ltorg|org)
   WORD: (WORD|HWORD|BYTE|SHORT|SPACE|ASCII|ASCIZ|ENDM|IF|ELSE|ENDIF|word|hword|byte|short|space|ascii|asciz|endm|if|else|endif)

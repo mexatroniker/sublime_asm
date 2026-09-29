@@ -14,7 +14,7 @@ from .debug import stop_openocd
 print(f">> Python 3.8 active!")
 
 # список переменных
-register = ('R0','R1','R2','R3','R4','R5','R6','R7','R8','R9','R10','R11','R12','LR','SP','PC','IP','S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15','S16','S17','S18','S19','S20','S21','S22','S23','S24','S25','S26','S27','S28','S29','S30','S31')
+register = ('R0','R1','R2','R3','R4','R5','R6','R7','R8','R9','R10','R11','R12','LR','SP','PC','IP','PSR','S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15','S16','S17','S18','S19','S20','S21','S22','S23','S24','S25','S26','S27','S28','S29','S30','S31','APSR','IPSR','EPSR','PSR','XPSR','IAPSR','EAPSR','IEPSR','MSP','PSP','PRIMASK','BASEPRI','BASEPRI_MAX','FAULTMASK','CONTROL')
 copro = ('VABS','VADD','VCMP','VCMPE','VCVT','VCVTR','VCVTB','VCVTT','VDIV','VFMA','VFNMA','VFMS','VFNMS','VLDM','VLDR','VLMA','VLMS','VMOV','VMRS','VMSR','VMUL','VNEG','VNMLA','VNMLS','VNMUL','VPOP','VPUSH','VSQRT','VSTM','VSTR','VSUB')
 cond = ('EQ', 'NE','CS','HS','CC','LO','MI','PL','VS','VC','HI','LS','GE','LT','GT','LE','AL')
 oper = ('SEL', 'CBZ', 'CBNZ', 'TBB', 'TBH', 'BKPT', 'CPSIE', 'CPSID')
@@ -27,12 +27,13 @@ oper_STR_type_T_cond = ('STR',)
 oper_branch_cond_register = ('BLX', 'BX')
 oper_branch_cond_label = ('BL', 'B')
 oper_IT = ('IT',)
-oper_stack = ('POP', 'PUSH')
+oper_stack = ('POP', 'PUSH', 'VPUSH', 'VPOP')
 oper_mem = ('LDR', 'STR')
 oper_shift = ('LSL', 'LSR', 'ASR', 'ROR', 'RRX')
 directive = ('MACRO', 'ENDM', 'SYNTAX', 'THUMB', 'CPU', 'FPU', 'EQU', 'INCLUDE', 'INCBIN', 'SECTION', 'ALIGN', 'GLOBAL', 'WEAK', 'SET', 'ARM', 'CODE16', 'CODE32', 'FORCE_THUMB', 'THUMB_FUNC', 'LTORG', 'ORG', 'IF', 'ELSE', 'ENDIF')
 directive_include = ('INCLUDE', 'INCBIN')
 WORD = ('WORD', 'HWORD', 'BYTE', 'SHORT', 'SPACE', 'ASCII', 'ASCIZ', )
+
 
 op_1 = (oper + oper_cond + oper_s_cond + oper_xy_cond + oper_type_cond + oper_LDR_type_T_cond + oper_STR_type_T_cond + oper_branch_cond_register + oper_branch_cond_label + oper_IT + copro)
 position = 0
@@ -612,9 +613,10 @@ class SpacerCommand(sublime_plugin.TextCommand):
 
 			directive_line = current_line.replace("\t", "") 		# если директивы в строке еще не было
 			
-			if directive_line[0] == "." and current_word.upper() in directive:
-				directive_line = directive_line.replace(current_word, current_word.upper())
-				self.view.replace(edit, line_start, text=directive_line)
+			if len(directive_line) > 0:
+				if directive_line[0] == "." and current_word.upper() in directive:
+					directive_line = directive_line.replace(current_word, current_word.upper())
+					self.view.replace(edit, line_start, text=directive_line)
 
 			current_word = current_word.upper()
 			

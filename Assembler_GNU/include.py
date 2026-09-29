@@ -78,10 +78,10 @@ def import_include(path_file, bibl_name): 		# Функция импорта incl
 					
 					
 					stroka[2] = f"{hex(eval(stroka[2]))}"		# делаем вычисления в ячейке, если там не только значение
-					exec(f"{stroka[0]} = {stroka[2]}") 		# создаем переменную
+					exec(f"{stroka[0]} = {stroka[2]}") 			# создаем переменную
 					stroka.append(stroka_comment)
 					stroka[1] = f"{int(stroka[2],16)}"
-					bibl_name[stroka[0]] = stroka[1:4]		# добавляем в словарь [0]=name, [1]=string, [2]=value, [3]=comment
+					bibl_name[stroka[0]] = stroka[1:4]			# добавляем в словарь [0]=name, [1]=string, [2]=value, [3]=comment
 					values += 1
 				
 						

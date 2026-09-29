@@ -1,7 +1,8 @@
-### The GNU Assembler plugin for Sublime Text 4
+### The GNU Assembler plugin for Sublime Text 4 (version build 4200)
 ---
 The plugin can be use in **Sublime Text 4** for program in **GNU Assembler** language for microcontrollers.  
-This plugin includes all the necessary tools for preparing firmware for a microcontroller, compiling it, and uploading it to flash memory.  
+This plugin includes all the necessary tools for preparing firmware for a microcontroller, compiling it, and uploading it to flash memory.
+**Temporarily incompatible with versions newer than 4200**
 
 ---
 ### Install:
