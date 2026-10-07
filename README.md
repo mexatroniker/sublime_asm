@@ -51,10 +51,12 @@ This plugin includes all the necessary tools for preparing firmware for a microc
 <div align="center">
 <img src="https://github.com/mexatroniker/mexatroniker/blob/main/struct.jpg" alt="openocd.bat" width="500" align="center">
 </div>
-When a structure is created in RAM, a macro for the initial initialization of values ​​is automatically generated. It must be explicitly called within the body of the main program. It always begins with: **init_struct_<name>**. For example for structure **variables**:
+
+* When a structure is created in RAM, a macro for the initial initialization of values ​​is automatically generated. It must be explicitly called within the body of the main program. It always begins with: **init_struct_name**. For example for structure **variables** :
 <div align="center">
 <img src="https://github.com/mexatroniker/mexatroniker/blob/main/init_struct.jpg" alt="openocd.bat" width="500" align="center">
 </div>
+
 ---
 ### TODO:
 * [x] Debug microcontrollers firmware 
