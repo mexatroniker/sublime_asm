@@ -47,7 +47,7 @@ This plugin includes all the necessary tools for preparing firmware for a microc
 *Please note: This file will not be run for firmware installation. It simply specifies the necessary commands, so the file format cannot be changed. It also cannot contain more than five blank lines. A line beginning with a < **-** > sign will be added to the final project launch file. The string < **bin/project.bin** > should also not change - this is just the path to the folder with the **.bin** file*  
 * To assemble the project and flash the microcontroller, use the combination < **Ctrl+Shift+E** >
 * To start debug mode, use combination < **Ctrl+Shift+O** >. The debugging function is implemented using the OpenOCD. To display information about peripheral registers, SVD files with the **.xml** extension are used, which must be placed in the **/inc** folder.
-*Functionality for using data structures has been added. Here is the declaration format for data structures in Flash and RAM:
+* Functionality for using data structures has been added. Here is the declaration format for data structures in Flash and RAM:
 <div align="center">
 <img src="https://github.com/mexatroniker/mexatroniker/blob/main/struct.jpg" alt="openocd.bat" width="500" align="center">
 </div>
