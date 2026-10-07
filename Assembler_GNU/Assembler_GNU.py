@@ -30,7 +30,7 @@ oper_IT = ('IT',)
 oper_stack = ('POP', 'PUSH', 'VPUSH', 'VPOP')
 oper_mem = ('LDR', 'STR')
 oper_shift = ('LSL', 'LSR', 'ASR', 'ROR', 'RRX')
-directive = ('MACRO', 'ENDM', 'SYNTAX', 'THUMB', 'CPU', 'FPU', 'EQU', 'INCLUDE', 'INCBIN', 'SECTION', 'ALIGN', 'GLOBAL', 'WEAK', 'SET', 'ARM', 'CODE16', 'CODE32', 'FORCE_THUMB', 'THUMB_FUNC', 'LTORG', 'ORG', 'IF', 'ELSE', 'ENDIF')
+directive = ('MACRO', 'ENDM', 'STRUCT', 'ENDS', 'SYNTAX', 'THUMB', 'CPU', 'FPU', 'EQU', 'INCLUDE', 'INCBIN', 'SECTION', 'ALIGN', 'GLOBAL', 'WEAK', 'SET', 'ARM', 'CODE16', 'CODE32', 'FORCE_THUMB', 'THUMB_FUNC', 'LTORG', 'ORG', 'IF', 'ELSE', 'ENDIF')
 directive_include = ('INCLUDE', 'INCBIN')
 WORD = ('WORD', 'HWORD', 'BYTE', 'SHORT', 'SPACE', 'ASCII', 'ASCIZ', )
 
@@ -205,6 +205,114 @@ class ImportEquCommand(sublime_plugin.TextCommand):  # глобальные пе
 						line[1] = line[1].replace("\n", "")						
 						include_global[f"{line[0]} {line[1]}"] = ["", f"{line[1]}",  f"<macros> from <{name}>"]
 
+
+					# обработка <.STRUCT>
+					elif ".struct" in line or ".STRUCT" in line:
+						line = line.replace("   ", " ").replace("  ", " ")
+						line = line.split(" ")
+						line[1] = line[1].replace("\n", "")
+						struct_name = f'{line[0].lower().replace(".", "")}_{line[1]}'
+						include_global[struct_name] = ["", struct_name,  f"<struct> from <{name}>"]
+
+						if "bss" in line or "BSS" in line:
+							include_global[f"init_{struct_name}"] = ["", f"init_{struct_name}",  f"<macros> from <{name}>"]
+						
+
+						struct_number = 0 				# порядковый номер элемента структуры
+
+						while(1):
+							line = file.readline().replace("\t", "")
+							if ".ends" in line or ".ENDS" in line: break
+
+							if "." in line:
+								line = line.replace("\n", "")
+								line = line.split("=")
+								value = 0
+								comment = f" from <{struct_name}>"
+								if len(line) > 1:
+									value = line[1]
+									value = value.split("@")
+									if len(value) > 1:
+										comment = value[1]									
+
+									if "ASCI" in line[0]:
+										value = value[0]
+										slovo = line[1].split('"')[1]
+										slovo = slovo.replace('"', "")
+									else:
+										value = value[0].replace(" ", "")
+										
+								else:
+									if "ASCI" in line[0]:
+										slovo = line[0].split('"')[1]
+										slovo = slovo.replace('"', "")
+										
+
+								char = 0
+								if "[" in line[0]:
+									char = value
+								else:
+									try:
+										value = int(value)
+									except:
+										try: 
+											value = int(value, 16)
+										except:
+											if '"' in value:
+												if value[0] == " ":													 
+													value = value[1:]
+												char = value.replace('"', "")																						
+											value = 0
+
+								data = line[0]
+									
+								temp_data = data.split(" ")
+								data = [item for item in temp_data if item]
+								size = data[0].upper()
+
+								comment = f"<{size}>{comment}"
+								
+								if size == ".WORD": size = 4
+								elif size == ".HWORD" or size == ".SHORT": size = 2
+								else: size = 1
+
+								item_name = data[1]
+								if "[" in item_name:
+									item_name = item_name.split("[")[0]
+
+								if char == 0:																					
+									include_global[f"{struct_name}_{item_name}"] = [value, f"{struct_number}",  comment]									
+								else:									
+									include_global[f"{struct_name}_{item_name}"] = [f'"{char}"', f"{struct_number}",  comment]
+
+								
+
+								data_leng = 1
+								if "[" in data[1]:
+									data_leng = data[1].split("[")
+									data_leng = data_leng[1].replace("]", "")
+									
+									try:
+										data_leng = int(data_leng)										
+									except:
+										try: 
+											data_leng = int(data_leng, 16)
+										except:
+											data_leng = len(line[1].split(","))
+
+								elif "ASCI" in data[0]:
+									data_leng = len(slovo)
+									if "ASCIZ" in data[0]:
+										data_leng += 1
+								
+								elif char != 0:
+									data_leng = len(char)
+
+								struct_number += (size * data_leng)
+
+
+						
+
 		bibl_global = bibl + "_global"
 		include[bibl_global] = include_global
 		
@@ -343,7 +451,7 @@ class EventListener(sublime_plugin.EventListener):
 				bibliothek = {**include[bibl], **include[bibl_global]}
 			
 			
-			# элементы списка
+			# элементы списка которые отображаются в выпадающем списке
 			for keys in bibliothek:
 				if prefix in keys or prefix.upper() in keys:
 					items.append(
@@ -512,11 +620,14 @@ class NewLineCorrectCommand(sublime_plugin.TextCommand): # обработка т
 								
 			except:
 				None
+
+			if ".endm" in current_line or ".ends" in current_line:
+				current_line = current_line_up
 			
-			if ".MACRO" in current_line:
+			if ".MACRO" in current_line or ".STRUCT" in current_line:
 				macros = 1
 
-			if ".ENDM" in current_line:
+			if ".ENDM" in current_line or ".ENDS" in current_line:
 				macros = 0
 
 			self.view.replace(edit, line_start, text=current_line)
@@ -679,9 +790,11 @@ class SpacerCommand(sublime_plugin.TextCommand):
 								position = 99
 							break
 
-				if current_word in WORD:
-					shift = shift_2 - shift_1 - len(current_word) - 2
-					shift = shift * " "
+				if current_word in WORD: 			# обработка после WORD, SHORT, BYTE
+					len_word = len(current_word)
+					shift = shift_2 - shift_1 - len_word - 2
+					extra_shift = 5 - (5 - len_word)
+					shift = (shift + extra_shift) * " "
 					self.view.replace(edit, word_region, text=(current_word + shift))
 				
 			

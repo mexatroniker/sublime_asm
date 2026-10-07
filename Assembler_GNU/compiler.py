@@ -157,6 +157,106 @@ class CompileEquCommand(sublime_plugin.TextCommand):  # глобальные п�
 						line[1] = line[1].replace("\n", "")						
 						include_global[f"{line[0]} {line[1]}"] = ["", f"{line[1]}",  f"<macros> from <{name}>"]
 
+					# обработка <.STRUCT>
+					elif ".struct" in line or ".STRUCT" in line:
+						line = line.replace("   ", " ").replace("  ", " ")
+						line = line.split(" ")
+						line[1] = line[1].replace("\n", "")
+						struct_name = f'{line[0].lower().replace(".", "")}_{line[1]}'
+						include_global[struct_name] = ["", struct_name,  f"<struct> from <{name}>"]
+						
+						struct_number = 0 				# порядковый номер элемента структуры
+						
+
+						while(1):
+							line = file.readline().replace("\t", "")
+							if ".ends" in line or ".ENDS" in line: break
+
+							if "." in line:
+								line = line.replace("\n", "")
+								line = line.split("=")
+								value = 0
+								comment = f" from <{struct_name}>"
+								if len(line) > 1:
+									value = line[1]
+									value = value.split("@")
+									if len(value) > 1:
+										comment = value[1]
+									
+									if "ASCI" in line[0]:
+										value = value[0]
+										slovo = line[1].split('"')[1]
+										slovo = slovo.replace('"', "")
+									else:
+										value = value[0].replace(" ", "")
+
+								else:
+									if "ASCI" in line[0]:
+										slovo = line[0].split('"')[1]
+										slovo = slovo.replace('"', "")
+
+								char = 0
+								if "[" in line[0]:
+									char = value
+								else:
+									try:
+										value = int(value)
+									except:
+										try: 
+											value = int(value, 16)
+										except:
+											if '"' in value:
+												if value[0] == " ":													 
+													value = value[1:]
+												char = value.replace('"', "")										
+											value = 0
+
+								data = line[0]
+
+								temp_data = data.split(" ")
+								data = [item for item in temp_data if item]
+								size = data[0].upper()
+
+								comment = f"<{size}>{comment}"
+																
+								if size == ".WORD": size = 4
+								elif size == ".HWORD" or size == ".SHORT": size = 2
+								else: size = 1
+
+								item_name = data[1]								
+								if "[" in item_name:
+									item_name = item_name.split("[")[0]
+
+
+								if char == 0:																					
+									include_global[f"{struct_name}_{item_name}"] = [value, f"{struct_number}",  comment]									
+								else:									
+									include_global[f"{struct_name}_{item_name}"] = [f'"{char}"', f"{struct_number}",  comment]
+									
+
+								data_leng = 1
+								if "[" in data[1]:
+									data_leng = data[1].split("[")
+									data_leng = data_leng[1].replace("]", "")
+									try:
+										data_leng = int(data_leng)
+									except:
+										try: 
+											data_leng = int(data_leng, 16)
+										except:
+											data_leng = len(line[1].split(","))
+								
+								elif "ASCI" in data[0]:
+									data_leng = len(slovo)
+									if "ASCIZ" in data[0]:
+										data_leng += 1
+								
+								elif char != 0:
+									data_leng = len(char)
+
+								struct_number += (size * data_leng)
+
+						
 		bibl_global = bibl + "_global"
 		include[bibl_global] = include_global
 
@@ -388,6 +488,321 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 							
 							line = ""
 
+						# обработка STRUCT
+						elif ".struct" in line or ".STRUCT" in line:
+							skip = 1							
+							line = line.split("(")
+							struct_name = line[0].replace(".STRUCT ", "struct_").replace(".struct", "struct_")
+							struct_name = struct_name.replace(" ", "")
+							struct_type = line[1].replace(")", "").replace(" ", "").replace("\n", "").upper()
+							
+							# если Flash
+							if struct_type == "FLASH":
+								line = f".GLOBAL {struct_name}"
+								temp_list.append([line, number])
+								line = f"{struct_name}:"
+								temp_list.append([line, number])
+								number += 1
+
+								while(1):
+									line = file.readline().replace("\t", "").replace("\n", "").replace(",", " ").replace("@", "@ ").replace("  ", " ")
+									if ".ENDS" in line or ".ends" in line:
+										break
+
+									line = line.split("@")
+									comment = ""
+									if len(line) > 1:
+										comment = f" \t\t@{line[1]}"
+									line = line[0]
+										
+									line = line.split(" ")
+									line = [item for item in line if item]
+									
+									line_leng = len(line)
+									if line_leng > 1:
+										stroka = f"\t{line[0]} \t"
+
+										if line_leng >= 4 and "[" not in line[1] and "ASCI" not in line[1]:
+											if line[2] != "=":
+												line[-1] = line[2]
+												print_terminal(f">> Attention: File <{name}> <line {number}> : invalid number of variables!" )
+											else:
+												if line_leng > 4:
+													line[-1] = line[3]
+													print_terminal(f">> Attention: File <{name}> <line {number}> : invalid number of variables!" )
+
+										if line_leng >= 3 and "[" not in line[1]: 			# если одно значение
+											stroka += f"{line[-1]}"
+										
+										elif "[" in line[1]: 			# если массив данных
+											array_leng = 1
+											array_leng = line[1].split("[")[1].replace("]", "")
+
+											start = 3
+											if line_leng > 2:
+												if line[2] != "=": start = 2												
+
+											try:
+												array_leng = int(array_leng)
+											except:
+												try:
+													array_leng = int(array_leng, 16)
+												except:
+													array_leng = len(line[start:])
+
+													print_terminal(f">> Attention: File <{name}> <line {number}> : array length not correct!" )
+
+
+											if line_leng == 2: 			# если при объявлении массива нет данных = 0
+												for item in range(array_leng):
+													stroka += f"0,"
+												stroka = stroka[:-1]
+											else: 						# если данные есть												
+												array_data_leng = len(line[start:])
+												array_check = array_leng - array_data_leng
+												# добавляем недостающие элементы -> 0
+												if array_check != 0:
+													print_terminal(f">> Attention: File <{name}> <line {number}> : array length not correct!" )
+												for item in range(array_check):
+													line.append("0")
+
+												# заполняем строку для компиляции
+												array_data_leng = len(line[start:]) + start
+												
+												for item in range(start, array_data_leng):
+													stroka += f"{line[item]},"
+												stroka = stroka[:-1]
+			
+
+										elif line_leng == 2: 			# если значение не указано -> 0
+											stroka += "0"
+
+
+										stroka += comment
+										temp_list.append([stroka, number])
+									number += 1
+
+							# если BSS
+							elif struct_type == "BSS":
+								line = f".GLOBAL {struct_name}"
+								temp_list.append([line, number])
+								line = f"{struct_name}:"
+								temp_list.append([line, number])
+								number += 1
+
+								#### MACRO ####
+								macro_name = f"init_{struct_name}"
+								macros[macro_name] = []
+								line = f".MACRO init_{struct_name}"
+								macros[macro_name].append(line)
+								temp_list.insert(after_head, [line, number])
+								after_head += 1
+								line = f"\tLDR    R1, = {struct_name}"
+								macros[macro_name].append(line)
+								temp_list.insert(after_head, [line, number])
+								after_head += 1
+								###############
+								address = 0
+								load_size = ("LDRB", "LDRB", "LDRH", "LDR ", "LDR ")
+								store_size = ("STRB", "STRB", "STRH", "STR ", "STR ")
+
+								while(1):
+									line = file.readline().replace("\t", "").replace("\n", "").replace(",", " ").replace("@", "@ ").replace("  ", " ")
+									if ".ENDS" in line or ".ends" in line:
+										#### MACRO ####
+										line = f".ENDM"
+										macros[macro_name].append(line)
+										temp_list.insert(after_head, [line, number])
+										after_head += 1
+										line = f"\n"
+										macros[macro_name].append(line)
+										temp_list.insert(after_head, [line, number])
+										after_head += 1
+										################
+										break
+
+									line = line.split("@")
+									comment = ""
+									if len(line) > 1:
+										comment = f" \t\t@{line[1]}"
+									line = line[0]
+									
+									if "ASCI" in line:
+										slovo = line.split('"')[1]
+										
+									line = line.split(" ")
+									line = [item for item in line if item]
+									
+									line_leng = len(line)
+									if line_leng > 1:
+										stroka = f"\t.SPACE \t"
+
+										size = line[0]
+										if size == ".WORD": size = 4
+										elif size == ".HWORD" or size == ".SHORT": size = 2
+										else: size = 1
+
+										if line_leng >= 4 and "[" not in line[1] and "ASCI" not in line[0]:
+											if line[2] != "=":												
+												print_terminal(f">> Attention: File <{name}> <line {number}> : invalid number of variables!" )
+											else:
+												if line_leng > 4:
+													print_terminal(f">> Attention: File <{name}> <line {number}> : invalid number of variables!" )
+
+										if "ASCI" in line[0]:											
+											real_size = len(slovo)
+											if "ASCIZ" in line[0]:
+												real_size += 1											
+											stroka += f"{real_size}"										
+
+										elif line_leng >= 3 and "[" not in line[1]: 				# если одно значение
+											stroka += f"{size}"
+										
+										elif "[" in line[1]: 			# если массив данных
+											array_leng = 1
+											array_leng = line[1].split("[")[1].replace("]", "")
+
+											start = 3
+											if line_leng > 2:
+												if line[2] != "=": start = 2												
+
+											try:
+												array_leng = int(array_leng)
+											except:
+												try:
+													array_leng = int(array_leng, 16)
+												except:
+													array_leng = len(line[start:])
+
+													print_terminal(f">> Attention: File <{name}> <line {number}> : array length not correct!" )
+
+
+											if line_leng == 2: 			# если при объявлении массива нет данных = 0
+												real_size = size * array_leng
+												stroka += f"{real_size}"
+											else: 						# если данные есть												
+												array_data_leng = len(line[start:])
+												array_check = array_leng - array_data_leng
+												# добавляем недостающие элементы -> 0
+												if array_check != 0:
+													print_terminal(f">> Attention: File <{name}> <line {number}> : array length not correct!" )
+												for item in range(array_check):
+													line.append("0")
+
+												# заполняем строку для компиляции
+												array_data_leng = len(line[start:])
+
+												real_size = size * array_data_leng
+												stroka += f"{real_size}"
+																									
+
+										elif line_leng == 2: 			# если значение не указано -> 0
+											stroka += f"{size}"
+
+										######## создаем макрос инициализации
+										
+										if "ASCI" in line[0]:
+											for char in slovo:
+													
+												m_line = f"\t{load_size[size]}  R0, ="
+												m_line += f"'{char}'"
+												macros[macro_name].append(m_line)
+												temp_list.insert(after_head, [m_line, number])
+												after_head += 1
+
+												m_line = f"\t{store_size[size]}  R0, [R1, {address}]"
+												macros[macro_name].append(m_line)
+												temp_list.insert(after_head, [m_line, number])
+												after_head += 1
+
+												address += size
+											
+											if "ASCIZ" in line[0]:
+												m_line = f"\t{load_size[size]}  R0, ="
+												m_line += f"0"
+												macros[macro_name].append(m_line)
+												temp_list.insert(after_head, [m_line, number])
+												after_head += 1
+
+												m_line = f"\t{store_size[size]}  R0, [R1, {address}]"
+												macros[macro_name].append(m_line)
+												temp_list.insert(after_head, [m_line, number])
+												after_head += 1
+
+												address += size
+
+										elif line_leng == 4 or line_leng == 3 and "[" not in line[1]: 	# если одно значение
+											m_line = f"\t{load_size[size]}  R0, ="
+											m_line += f"{line[-1]}"
+											macros[macro_name].append(m_line)
+											temp_list.insert(after_head, [m_line, number])
+											after_head += 1
+
+											m_line = f"\t{store_size[size]}  R0, [R1, {address}]"
+											macros[macro_name].append(m_line)
+											temp_list.insert(after_head, [m_line, number])
+											after_head += 1
+
+											address += size
+										
+										elif "[" in line[1]: 			# если массив данных
+											array_leng = 1
+											array_leng = line[1].split("[")[1].replace("]", "")
+
+											start = 3
+											if line_leng > 2:
+												if line[2] != "=": start = 2												
+
+											try:
+												array_leng = int(array_leng)
+											except:
+												try:
+													array_leng = int(array_leng, 16)
+												except:
+													array_leng = len(line[start:])
+
+													
+
+											if line_leng == 2: 			# если при объявлении массива нет данных = 0
+												for item in range(array_leng):
+													address += size
+											else: 						# если данные есть												
+												array_data_leng = len(line[start:])													
+												array_check = array_leng - array_data_leng
+
+												# добавляем недостающие элементы -> 0
+												for item in range(array_check):
+													line.append("0")
+
+												# заполняем строку для компиляции
+												array_data_leng = len(line[start:]) + start
+												
+												for item in range(start, array_data_leng):
+													
+													m_line = f"\t{load_size[size]}  R0, ="
+													m_line += f"{line[item]}"
+													macros[macro_name].append(m_line)
+													temp_list.insert(after_head, [m_line, number])
+													after_head += 1
+
+													m_line = f"\t{store_size[size]}  R0, [R1, {address}]"
+													macros[macro_name].append(m_line)
+													temp_list.insert(after_head, [m_line, number])
+													after_head += 1
+
+													address += size
+												
+										
+										elif line_leng == 2:
+											address += size
+										
+										########
+
+										stroka += comment
+										temp_list.append([stroka, number])
+									number += 1
+
+
 						# обработка label	
 						elif len(line) > 0:
 							if line[0] != "\t" and line[0] != "." and ":" in line:
@@ -397,6 +812,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 
 						elif ".EQU" in line or ".equ" in line:
 							skip = 1
+
 
 						######################
 						if skip == 0:
@@ -433,7 +849,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 				temp = spisok[i]
 
 				if len(temp) > 1:
-					if "@" not in temp and "global" not in temp and "GLOBAL" not in temp and "equ" not in temp and "EQU" not in temp and "{" not in temp and "}" not in temp:
+					if "@" not in temp and "global" not in temp and "GLOBAL" not in temp and "equ" not in temp and "EQU" not in temp and "{" not in temp and "}" not in temp and ".struct" not in temp and ".STRUCT" not in temp:
 
 						spisok[i] = spisok[i].replace("\t", "$").replace("\n", "").replace("(", "( ").replace(")", " ) ").replace(">>", " >> ").replace("<<", " << ").replace("|", " | ").replace("+", " + ").replace("-", " - ").replace("[", "[ ").replace("]", " ]").replace("  ", " ")
 						spisok[i] = spisok[i].split(" ")
@@ -500,7 +916,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 									if value[0].isalpha() and value_clear not in register:
 
 										try:
-											spisok_value = spisok_value.replace("$","")
+											spisok_value = spisok_value.replace("$","")											
 											spisok_value = bibliothek[spisok_value][1]
 											# простая проверка есть ли значение в библиотеке
 
@@ -514,7 +930,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 													spisok_value = bibliothek[global_label][1]
 												except:
 													if spisok_value not in set_list and spisok_value not in label_list and spisok_value not in cond and oper not in WORD and spisok_value not in oper_shift and oper not in oper_cpu:
-														error += 1																												
+														error += 1														
 														print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : "{spisok_value}" not found...')
 									temp += " "
 											

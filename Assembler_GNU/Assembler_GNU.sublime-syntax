@@ -60,7 +60,11 @@ contexts:
       captures:
         1: asm_register
         2: asm_s
-               
+
+    - match: '[.]+(STRUCT|struct|ENDS|ends)(\s+(\w+)+\s+)*'
+      captures:
+        1: asm_value
+        2: asm_s                   
 
     - match: '\b{{oper_LDR_type_T_cond}}{{type_LDR}}{{T}}{{cond}}\b'              # oper_LDR_type_T_cond
       captures:
@@ -152,11 +156,16 @@ contexts:
     - match: '\b(\w+)[(]+'
       captures:
         1: asm_macro
-
-    - match: '\=\s*([a-z_]+[0-9]*)+'
+    
+    - match: '\=\s*(?!struct_)([a-z_]+[0-9]*)+'
       captures:
         1: asm_label
-    
+
+    - match: '(struct_)([a-zA-Z0-9]*)(\_)*[(]*'
+      captures:
+        1: asm_value
+        2: asm_s    
+
     - match: '=>|:>|>>>|<<<'
       push: debug
 
@@ -170,9 +179,10 @@ contexts:
     - match: '{{copro}}'
       scope: asm_oper_cond 
 
-    - match: '({{oper_cond}})+(\,+)+(\s+[a-z_]+[0-9]*)+'
+    - match: '({{oper_cond}})+(\,+)+(\s+(?!struct_)[a-z_]+[0-9]*)+'
       captures:
-        4: asm_label    
+        4: asm_label  
+
 
   path:
     - meta_scope: asm_quote

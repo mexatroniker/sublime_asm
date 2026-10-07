@@ -8,3 +8,4 @@
 * 23.06.2026 - Debug: Added signed representation of the number for registers
 * 29.09.2026 - Syntax: Added special register and instruction
 * 29.09.2026 - Debug: Added an infinite wait when pressing "Resume"
+* 07.10.2026 - Compile: Functionality for using data structures has been added.
