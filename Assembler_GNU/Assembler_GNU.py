@@ -767,17 +767,18 @@ class SpacerCommand(sublime_plugin.TextCommand):
 						self.view.replace(edit, line_start, text=current_line)
 						after_label = 1
 											
-					self.RemoveCursor(shift_1)
+					self.RemoveCursor(shift_1)					
 
 				
 				for item in op_1:
 					if item in current_word:
-						if current_word[:len(item)] == item:
+						if current_word[:len(item)] == item and current_word != "STRUCT":
 							self.view.replace(edit, word_region, text=current_word + " ")
 							if macros == 1:
-								self.SetCursor(macros_shift)
-							else: 
+								self.SetCursor(macros_shift)								
+							else:
 								self.SetCursor(shift_2)
+
 
 							after_label = 0
 							position = 1
@@ -867,6 +868,7 @@ class SpacerCommand(sublime_plugin.TextCommand):
 		space = " " * space
 
 		self.view.insert(self.edit, shift_coord.b, text=space)
+
 
 	def RemoveCursor(self, shift=0): 	# выравнивание курсора после : относительно начала строки через " "
 		cursor_pos = self.view.sel()[0].begin()

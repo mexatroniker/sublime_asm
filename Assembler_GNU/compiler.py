@@ -509,6 +509,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 									if ".ENDS" in line or ".ends" in line:
 										break
 
+									line = line.replace("#", "@").replace(";", "@")
 									line = line.split("@")
 									comment = ""
 									if len(line) > 1:
@@ -621,6 +622,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 										################
 										break
 
+									line = line.replace("#", "@").replace(";", "@")
 									line = line.split("@")
 									comment = ""
 									if len(line) > 1:
@@ -930,7 +932,7 @@ class CompileFilesCommand(sublime_plugin.TextCommand):
 													spisok_value = bibliothek[global_label][1]
 												except:
 													if spisok_value not in set_list and spisok_value not in label_list and spisok_value not in cond and oper not in WORD and spisok_value not in oper_shift and oper not in oper_cpu:
-														error += 1														
+														error += 1
 														print_terminal(f'>> Attention: File <{name}> <line {temp_list[i][1]}> : "{spisok_value}" not found...')
 									temp += " "
 											
